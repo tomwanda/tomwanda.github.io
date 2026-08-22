@@ -25,40 +25,10 @@
     --ink-on-paper:#2c2418;
     --ink-muted-on-paper:#6e6252;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --cream:#242019;
-      --cream-light:#2e2820;
-      --cream-border:#4a4030;
-      --ink:#f2e9d8;
-      --ink-muted:#b8a98c;
-      --olive:#1c2117;
-      --olive-light:#2b3324;
-      --terracota:#e2703f;
-      --terracota-dark:#c1502e;
-      --gold:#d9b06a;
-      --ok:#6ea373;
-      --warn:#d9793f;
-      --paper:#fbf6ea;
-      --shadow: 0 18px 40px -18px rgba(0,0,0,0.6);
-    }
-  }
-  :root[data-theme="dark"]{
-    --cream:#242019;
-    --cream-light:#2e2820;
-    --cream-border:#4a4030;
-    --ink:#f2e9d8;
-    --ink-muted:#b8a98c;
-    --olive:#1c2117;
-    --olive-light:#2b3324;
-    --terracota:#e2703f;
-    --terracota-dark:#c1502e;
-    --gold:#d9b06a;
-    --ok:#6ea373;
-    --warn:#d9793f;
-    --paper:#fbf6ea;
-    --shadow: 0 18px 40px -18px rgba(0,0,0,0.6);
-  }
+  /* Esta herramienta se muestra siempre con la paleta clara de la marca
+     (la misma crema/terracota/oliva de la página de pedidos), sin adaptarse
+     al modo oscuro del sistema — así se ve siempre igual y prolija, sin
+     depender de la configuración de cada PC. */
 
   *{box-sizing:border-box;}
   body{
@@ -124,11 +94,11 @@
   }
 
   main{
-    max-width:1640px;
+    max-width:1880px;
     margin:0 auto;
     padding:clamp(16px,3vw,32px);
     display:grid;
-    grid-template-columns:minmax(280px,0.8fr) minmax(360px,1.15fr) minmax(340px,1fr);
+    grid-template-columns:minmax(280px,0.55fr) minmax(560px,1.3fr) minmax(360px,0.85fr);
     gap:clamp(16px,2vw,28px);
     align-items:start;
   }
@@ -149,6 +119,7 @@
     border:1px solid var(--cream-border);
     border-radius:14px;
     padding:clamp(18px,2.5vw,26px);
+    container-type:inline-size;
   }
   .panel + .panel{margin-top:18px;}
   .panel h2{
@@ -209,8 +180,14 @@
   }
 
   /* item pickers */
-  .item-list{display:grid; grid-template-columns:1fr 1fr; gap:8px 12px;}
-  @media (max-width:600px){ .item-list{grid-template-columns:1fr;} }
+  /* 2 columnas solo cuando el panel realmente tiene lugar para que el nombre
+     del producto no choque con el precio — se mide el ancho real del panel
+     (container query), no el ancho de la ventana, porque ese ancho cambia
+     según cuántas columnas tenga el layout general en cada momento. */
+  .item-list{display:grid; grid-template-columns:minmax(0,1fr); gap:8px 12px;}
+  @container (min-width:680px){
+    .item-list{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  }
   .item-row{
     display:flex;
     align-items:center;
@@ -220,9 +197,10 @@
     border-radius:9px;
     background:var(--paper);
     color:var(--ink-on-paper);
+    min-width:0;
   }
   .item-row .item-name{flex:1; min-width:0;}
-  .item-row .item-name strong{display:block; font-size:0.92rem;}
+  .item-row .item-name strong{display:block; font-size:0.92rem; overflow-wrap:break-word;}
   .item-row .item-name small{color:var(--ink-muted-on-paper); font-size:0.76rem;}
   .stepper{display:flex; align-items:center; gap:8px;}
   .stepper button{
@@ -304,6 +282,9 @@
   }
   details.tip summary::-webkit-details-marker{display:none;}
   details.tip summary::before{content:"🖨️  ";}
+  .dia-detalle summary::before{content:"📊  ";}
+  .dia-ranking summary::before{content:"🏆  ";}
+  .dia-ranking{margin-top:10px;}
   details.tip p{margin:10px 0 0; line-height:1.5;}
   details.tip a{color:var(--terracota-dark); text-decoration:underline;}
 
@@ -429,6 +410,22 @@
   .dia-value{font-size:1.2rem; font-weight:700; font-variant-numeric:tabular-nums;}
   .dia-value.ok{color:var(--ok);}
   .dia-note{font-size:0.74rem; color:var(--ink-muted); margin-top:14px; line-height:1.45;}
+
+  .dia-detalle{margin-top:16px;}
+  .dia-row{
+    display:flex; justify-content:space-between; gap:10px;
+    padding:6px 0; border-bottom:1px solid var(--cream-border);
+    font-size:0.85rem;
+  }
+  .dia-row:last-child{border-bottom:none;}
+  .dia-row .n{font-weight:600;}
+  .dia-row .pz{color:var(--ink-muted); font-variant-numeric:tabular-nums;}
+  .dia-piezas-total{
+    display:flex; justify-content:space-between;
+    margin-top:8px; padding-top:10px; border-top:1px solid var(--cream-border);
+    font-weight:700; font-size:0.9rem;
+  }
+  .dia-empty{color:var(--ink-muted); font-size:0.83rem; font-style:italic; margin-top:10px;}
 
   footer.credit{
     text-align:center;
@@ -599,7 +596,19 @@
         <div class="dia-stat"><span class="dia-label">Costo estimado</span><span class="dia-value" id="rdCosto">$0</span></div>
         <div class="dia-stat"><span class="dia-label">Ganancia estimada</span><span class="dia-value ok" id="rdGanancia">$0</span></div>
       </div>
-      <p class="dia-note">Estimado con los costos de insumos cargados el 20/08/2026 (auditoría del Excel de costos). No se actualiza solo si cambian precios de compra — avisame cuando cargues facturas nuevas y te actualizo los valores acá también. Solo cuenta lo impreso hoy desde este navegador.</p>
+
+      <details class="tip dia-detalle">
+        <summary>Ver desglose por producto (para calcular mañana)</summary>
+        <div id="rdDesglose"></div>
+        <div class="dia-piezas-total" id="rdPiezasTotal"></div>
+      </details>
+
+      <details class="tip dia-detalle dia-ranking">
+        <summary>Ver ranking de clientes (últimos 14 días)</summary>
+        <div id="rkList"></div>
+      </details>
+
+      <p class="dia-note">Estimado con los costos de insumos cargados el 20/08/2026 (auditoría del Excel de costos). No se actualiza solo si cambian precios de compra — avisame cuando cargues facturas nuevas y te actualizo los valores acá también. Los números de arriba son de hoy; el ranking mira los últimos 14 días. Todo se guarda en tu equipo, no en internet, y los pedidos de más de 14 días se van borrando solos para no acumular.</p>
     </div>
 
     <div class="history">
@@ -619,14 +628,15 @@
   // costos del 20/08/2026 (Tomwanda_Sushi_Costos_v31.xlsx). Es un valor fijo
   // cargado a mano, no se sincroniza solo con el Excel — si cambian precios
   // de compra hay que actualizarlo acá también.
+  // pz = piezas totales que trae el combo (para el desglose de producción del día)
   var COMBOS = [
-    {n:"Tomwanda Clásico Mini", p:16400, c:8199},
-    {n:"Tomwanda Premium Mini", p:27200, c:7763},
-    {n:"Degustación de Nigiris", p:25300, c:2700},
-    {n:"Tomwanda Clásico", p:28100, c:15595},
-    {n:"Tomwanda Premium", p:39000, c:13016},
-    {n:"Tomwanda Clásico Grande", p:42800, c:23764},
-    {n:"Tomwanda Premium Grande", p:54000, c:18011}
+    {n:"Tomwanda Clásico Mini", p:16400, c:8199, pz:12},
+    {n:"Tomwanda Premium Mini", p:27200, c:7763, pz:12},
+    {n:"Degustación de Nigiris", p:25300, c:2700, pz:12},
+    {n:"Tomwanda Clásico", p:28100, c:15595, pz:24},
+    {n:"Tomwanda Premium", p:39000, c:13016, pz:24},
+    {n:"Tomwanda Clásico Grande", p:42800, c:23764, pz:36},
+    {n:"Tomwanda Premium Grande", p:54000, c:18011, pz:36}
   ];
   var PIEZAS = [
     {n:"New York Phila", p4:7200, c4:2406},
@@ -824,15 +834,29 @@
   }
 
   // ---------- history ----------
-  // El log completo se guarda para poder calcular el resumen del día (hasta
-  // 300 comandas, de sobra); la lista visible de "reimprimir" solo muestra
-  // las últimas 15 para no hacerse eterna.
+  // El log completo se guarda para poder calcular el resumen del día y el
+  // ranking de clientes; la lista visible de "reimprimir" solo muestra las
+  // últimas 15 para no hacerse eterna. Los pedidos con más de RETENTION_DAYS
+  // se van descartando solos cada vez que se guarda algo nuevo, así el
+  // navegador no acumula historial para siempre. Los pedidos viejos que
+  // quedaron guardados ANTES de que existiera esta fecha (sin "ts") no se
+  // tocan acá — se van solos cuando el tope de 300 los empuja afuera.
+  var RETENTION_DAYS = 14;
+  function pruneOldHistory(list){
+    var cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    return list.filter(function(h){
+      if(!h.ts) return true;
+      var t = new Date(h.ts).getTime();
+      return isNaN(t) ? true : t >= cutoff;
+    });
+  }
   function loadHistory(){
     try{
       return JSON.parse(localStorage.getItem("tomwanda_comanda_history") || "[]");
     }catch(e){ return []; }
   }
   function saveHistory(list){
+    list = pruneOldHistory(list);
     try{ localStorage.setItem("tomwanda_comanda_history", JSON.stringify(list.slice(0,300))); }catch(e){}
   }
   function renderHistory(){
@@ -879,6 +903,7 @@
     }
     renderHistory();
     renderResumenDia();
+    renderRanking();
   }
 
   // ---------- resumen del día ----------
@@ -892,14 +917,75 @@
   function renderResumenDia(){
     var hoy = loadHistory().filter(function(h){ return esHoy(h.ts); });
     var ingresos = 0, costo = 0;
+    var comboUnits = COMBOS.map(function(){return 0;});
+    var piezaUnits = PIEZAS.map(function(){return 0;});
     hoy.forEach(function(h){
       ingresos += h.total || 0;
       costo += (typeof h.costo === "number") ? h.costo : 0;
+      (h.combos || []).forEach(function(q, i){ if(comboUnits[i] !== undefined) comboUnits[i] += q; });
+      (h.piezas || []).forEach(function(q, i){ if(piezaUnits[i] !== undefined) piezaUnits[i] += q; });
     });
     document.getElementById("rdPedidos").textContent = hoy.length;
     document.getElementById("rdIngresos").textContent = money(ingresos);
     document.getElementById("rdCosto").textContent = money(costo);
     document.getElementById("rdGanancia").textContent = money(ingresos - costo);
+
+    // desglose por producto: cuántos combos/sets salieron y cuántas piezas
+    // físicas representan en total, para calcular cuánto dejar preparado
+    // para el día siguiente.
+    var desglose = document.getElementById("rdDesglose");
+    var rows = "";
+    var totalPiezas = 0;
+    COMBOS.forEach(function(c, i){
+      if(comboUnits[i] > 0){
+        var pz = comboUnits[i] * c.pz;
+        totalPiezas += pz;
+        rows += '<div class="dia-row"><span class="n">' + comboUnits[i] + 'x ' + c.n + '</span><span class="pz">' + pz + ' piezas</span></div>';
+      }
+    });
+    PIEZAS.forEach(function(p, i){
+      if(piezaUnits[i] > 0){
+        totalPiezas += piezaUnits[i];
+        rows += '<div class="dia-row"><span class="n">' + p.n + ' (sueltas)</span><span class="pz">' + piezaUnits[i] + ' piezas</span></div>';
+      }
+    });
+    desglose.innerHTML = rows || '<div class="dia-empty">Todavía no hay pedidos impresos hoy.</div>';
+    document.getElementById("rdPiezasTotal").textContent = rows ? ("Total piezas del día: " + totalPiezas) : "";
+  }
+
+  // ---------- ranking de clientes ----------
+  function normPhone(tel){
+    return (tel || "").replace(/\D/g, "");
+  }
+  function renderRanking(){
+    var list = loadHistory(); // ya viene podado a los últimos RETENTION_DAYS
+    var map = {};
+    list.forEach(function(h){
+      var key = normPhone(h.telefono) || (h.nombre ? ("n:" + h.nombre.trim().toLowerCase()) : "");
+      if(!key) return;
+      if(!map[key]){
+        map[key] = {nombre: h.nombre || "Sin nombre", telefono: h.telefono || "—", pedidos:0, gastado:0};
+      }
+      map[key].pedidos += 1;
+      map[key].gastado += h.total || 0;
+    });
+    var arr = Object.keys(map).map(function(k){ return map[k]; });
+    arr.sort(function(a,b){ return b.pedidos - a.pedidos || b.gastado - a.gastado; });
+
+    var wrap = document.getElementById("rkList");
+    if(!arr.length){
+      wrap.innerHTML = '<div class="dia-empty">Todavía no hay pedidos con nombre o teléfono en los últimos ' + RETENTION_DAYS + ' días.</div>';
+      return;
+    }
+    wrap.innerHTML = "";
+    arr.slice(0,20).forEach(function(c, i){
+      var row = document.createElement("div");
+      row.className = "dia-row";
+      row.innerHTML =
+        '<span class="n">' + (i+1) + '. ' + c.nombre + (c.telefono !== "—" ? ' — ' + c.telefono : '') + '</span>' +
+        '<span class="pz">' + c.pedidos + (c.pedidos === 1 ? ' pedido' : ' pedidos') + ' · ' + money(c.gastado) + '</span>';
+      wrap.appendChild(row);
+    });
   }
   function applySnapshot(h){
     document.getElementById("fNombre").value = h.nombre || "";
@@ -965,6 +1051,7 @@
     saveHistory(hist);
     renderHistory();
     renderResumenDia();
+    renderRanking();
     refreshCounterPill();
     render();
 
@@ -983,6 +1070,7 @@
   refreshCounterPill();
   renderHistory();
   renderResumenDia();
+  renderRanking();
   render();
   setInterval(function(){
     document.getElementById("tFecha").textContent =
