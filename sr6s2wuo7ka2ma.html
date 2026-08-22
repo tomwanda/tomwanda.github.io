@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Comandas Tomwanda</title>
+<style>
+  :root{
+    --cream:#f4ecdd;
+    --cream-light:#fffaf1;
+    --cream-border:#e2d3ae;
+    --ink:#2c2418;
+    --ink-muted:#6e6252;
+    --olive:#38402c;
+    --olive-light:#4c5640;
+    --terracota:#c1502e;
+    --terracota-dark:#9f3f22;
+    --gold:#c9a25a;
+    --ok:#4b7a51;
+    --warn:#b0552c;
+    --paper:#fffef9;
+    --shadow: 0 18px 40px -20px rgba(44,36,24,0.45);
+    --on-dark:#fffaf1;
+    --ink-on-paper:#2c2418;
+    --ink-muted-on-paper:#6e6252;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --cream:#242019;
+      --cream-light:#2e2820;
+      --cream-border:#4a4030;
+      --ink:#f2e9d8;
+      --ink-muted:#b8a98c;
+      --olive:#1c2117;
+      --olive-light:#2b3324;
+      --terracota:#e2703f;
+      --terracota-dark:#c1502e;
+      --gold:#d9b06a;
+      --ok:#6ea373;
+      --warn:#d9793f;
+      --paper:#fbf6ea;
+      --shadow: 0 18px 40px -18px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --cream:#242019;
+    --cream-light:#2e2820;
+    --cream-border:#4a4030;
+    --ink:#f2e9d8;
+    --ink-muted:#b8a98c;
+    --olive:#1c2117;
+    --olive-light:#2b3324;
+    --terracota:#e2703f;
+    --terracota-dark:#c1502e;
+    --gold:#d9b06a;
+    --ok:#6ea373;
+    --warn:#d9793f;
+    --paper:#fbf6ea;
+    --shadow: 0 18px 40px -18px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:700;
+    text-wrap:balance;
+    margin:0;
+  }
+  .mono{
+    font-family:"JetBrains Mono","SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  }
+
+  a{color:inherit;}
+
+  /* ---------- shell ---------- */
+  .topbar{
+    background:var(--olive);
+    color:var(--on-dark);
+    padding:18px clamp(16px,4vw,40px);
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .topbar .brand h1{
+    font-size:1.25rem;
+    color:var(--on-dark);
+    letter-spacing:0.01em;
+  }
+  .topbar .brand span.tag{
+    font-size:0.72rem;
+    color:var(--gold);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+  }
+  .counter-pill{
+    font-size:0.78rem;
+    color:var(--on-dark);
+    opacity:0.75;
+  }
+  .counter-pill button{
+    background:none;
+    border:none;
+    color:var(--gold);
+    text-decoration:underline;
+    cursor:pointer;
+    font-size:0.78rem;
+    padding:0;
+    margin-left:8px;
+  }
+
+  main{
+    max-width:1180px;
+    margin:0 auto;
+    padding:clamp(16px,4vw,32px);
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(320px,0.85fr);
+    gap:clamp(18px,3vw,32px);
+    align-items:start;
+  }
+  @media (max-width:880px){
+    main{grid-template-columns:1fr;}
+  }
+
+  /* ---------- form ---------- */
+  .panel{
+    background:var(--cream-light);
+    border:1px solid var(--cream-border);
+    border-radius:14px;
+    padding:clamp(18px,2.5vw,26px);
+  }
+  .panel + .panel{margin-top:18px;}
+  .panel h2{
+    font-size:1.05rem;
+    color:var(--terracota-dark);
+    margin-bottom:14px;
+  }
+  .field-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:520px){ .field-row{grid-template-columns:1fr;} }
+  label{
+    display:block;
+    font-size:0.78rem;
+    color:var(--ink-muted);
+    margin-bottom:5px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  input[type="text"], input[type="tel"], input[type="time"], textarea, select{
+    width:100%;
+    font:inherit;
+    font-size:0.95rem;
+    padding:9px 11px;
+    border:1px solid var(--cream-border);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink-on-paper);
+    margin-bottom:14px;
+  }
+  input:focus, textarea:focus, select:focus, button:focus-visible{
+    outline:2px solid var(--terracota);
+    outline-offset:1px;
+  }
+  textarea{resize:vertical; min-height:52px;}
+
+  .seg{
+    display:inline-flex;
+    border:1px solid var(--cream-border);
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .seg button{
+    font:inherit;
+    font-size:0.85rem;
+    border:none;
+    background:var(--paper);
+    color:var(--ink-muted-on-paper);
+    padding:8px 16px;
+    cursor:pointer;
+  }
+  .seg button.active{
+    background:var(--terracota);
+    color:#fff8f0;
+  }
+
+  /* item pickers */
+  .item-list{display:flex; flex-direction:column; gap:8px;}
+  .item-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px;
+    border:1px solid var(--cream-border);
+    border-radius:9px;
+    background:var(--paper);
+    color:var(--ink-on-paper);
+  }
+  .item-row .item-name{flex:1; min-width:0;}
+  .item-row .item-name strong{display:block; font-size:0.92rem;}
+  .item-row .item-name small{color:var(--ink-muted-on-paper); font-size:0.76rem;}
+  .stepper{display:flex; align-items:center; gap:8px;}
+  .stepper button{
+    width:26px; height:26px;
+    border-radius:50%;
+    border:1px solid var(--cream-border);
+    background:var(--cream);
+    color:var(--terracota-dark);
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+  }
+  .stepper button:hover{background:var(--terracota); color:#fff8f0; border-color:var(--terracota);}
+  .stepper .qty{
+    min-width:1.4em;
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+    font-size:0.95rem;
+  }
+  .item-row .item-price{
+    font-variant-numeric:tabular-nums;
+    font-size:0.85rem;
+    color:var(--ink-muted-on-paper);
+    width:5.2em;
+    text-align:right;
+  }
+  .group-label{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--gold);
+    margin:14px 0 6px;
+  }
+  .group-label:first-child{margin-top:0;}
+  .piezas-note{
+    font-size:0.78rem;
+    color:var(--ink-muted);
+    margin-top:8px;
+  }
+  .piezas-note.warn{color:var(--warn);}
+
+  .btn{
+    font:inherit;
+    font-size:0.92rem;
+    font-weight:600;
+    border:none;
+    border-radius:9px;
+    padding:11px 20px;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:var(--terracota);
+    color:#fff8f0;
+    box-shadow:0 8px 18px -8px rgba(193,80,46,0.55);
+  }
+  .btn-primary:hover{background:var(--terracota-dark);}
+  .btn-ghost{
+    background:transparent;
+    color:var(--ink-muted);
+    border:1px solid var(--cream-border);
+  }
+  .btn-ghost:hover{border-color:var(--terracota); color:var(--terracota-dark);}
+
+  /* ---------- printer tip ---------- */
+  details.tip{
+    background:var(--cream-light);
+    border:1px dashed var(--cream-border);
+    border-radius:12px;
+    padding:14px 18px;
+    margin-bottom:18px;
+    font-size:0.86rem;
+    color:var(--ink-muted);
+  }
+  details.tip summary{
+    cursor:pointer;
+    font-weight:600;
+    color:var(--terracota-dark);
+    list-style:none;
+  }
+  details.tip summary::-webkit-details-marker{display:none;}
+  details.tip summary::before{content:"🖨️  ";}
+  details.tip p{margin:10px 0 0; line-height:1.5;}
+  details.tip a{color:var(--terracota-dark); text-decoration:underline;}
+
+  /* ---------- preview column ---------- */
+  .preview-col{position:sticky; top:20px;}
+  .preview-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .preview-toolbar .seg{margin-bottom:0;}
+
+  .ticket-stage{
+    background:var(--olive);
+    border-radius:16px;
+    padding:clamp(22px,4vw,34px) 16px 30px;
+    display:flex;
+    justify-content:center;
+  }
+  .ticket{
+    background:var(--paper);
+    color:var(--ink-on-paper);
+    width:100%;
+    max-width:340px;
+    padding:22px 20px 18px;
+    box-shadow:var(--shadow);
+    font-family:"JetBrains Mono","SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:0.82rem;
+    line-height:1.5;
+    position:relative;
+  }
+  .ticket[data-width="80"]{max-width:400px; font-size:0.86rem;}
+  .ticket[data-width="a4"]{max-width:460px; font-size:0.9rem; padding:34px 34px 28px;}
+  .ticket::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:-9px;
+    height:18px;
+    background:
+      linear-gradient(-45deg, var(--paper) 8px, transparent 0) 0 4px,
+      linear-gradient(45deg, var(--paper) 8px, transparent 0) 0 4px;
+    background-size:16px 16px;
+    background-repeat:repeat-x;
+    background-color:transparent;
+  }
+  .t-center{text-align:center;}
+  .t-title{
+    font-family:Georgia,"Times New Roman",serif;
+    font-weight:700;
+    font-size:1.15em;
+    letter-spacing:0.02em;
+  }
+  .t-sub{font-size:0.8em; color:#6b6350; margin-top:2px;}
+  .t-hr{
+    border:none;
+    border-top:1px dashed #b9ad91;
+    margin:12px 0;
+  }
+  .t-row{display:flex; justify-content:space-between; gap:8px;}
+  .t-row + .t-row{margin-top:2px;}
+  .t-label{color:#6b6350;}
+  .t-item{display:flex; justify-content:space-between; gap:10px; margin:3px 0;}
+  .t-item .n{flex:1;}
+  .t-item .p{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .t-total{
+    display:flex; justify-content:space-between;
+    font-weight:700; font-size:1.05em;
+    margin-top:8px;
+  }
+  .t-empty{color:#8c8264; font-style:italic;}
+  .t-notas{white-space:pre-wrap; margin-top:4px;}
+  .t-foot{
+    text-align:center;
+    margin-top:16px;
+    font-size:0.85em;
+    color:#6b6350;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+
+  .history{
+    margin-top:22px;
+  }
+  .history h3{
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-muted);
+    margin-bottom:8px;
+  }
+  .history-item{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px 4px;
+    border-bottom:1px solid var(--cream-border);
+    font-size:0.83rem;
+  }
+  .history-item:last-child{border-bottom:none;}
+  .history-item button{
+    background:none; border:none; color:var(--terracota-dark);
+    text-decoration:underline; cursor:pointer; font:inherit; font-size:0.8rem;
+    padding:0;
+  }
+  .history-empty{color:var(--ink-muted); font-size:0.83rem; font-style:italic;}
+
+  footer.credit{
+    text-align:center;
+    color:var(--ink-muted);
+    font-size:0.75rem;
+    padding:24px 16px 32px;
+  }
+
+  /* ---------- print ---------- */
+  @media print{
+    body *{visibility:hidden;}
+    .ticket-stage, .ticket-stage *{visibility:visible;}
+    .ticket-stage{
+      background:#fff !important;
+      padding:0 !important;
+      position:absolute; top:0; left:0; width:100%;
+    }
+    .ticket{
+      box-shadow:none !important;
+      max-width:none !important;
+      width:100%;
+      padding:6px 8px 12px;
+    }
+    .ticket[data-width="58"]{width:58mm; font-size:9.5px;}
+    .ticket[data-width="80"]{width:80mm; font-size:11px;}
+    .ticket[data-width="a4"]{width:100%; font-size:13px; padding:20mm;}
+    .ticket::after{display:none;}
+    @page{margin:0;}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <h1>Comandas Tomwanda</h1>
+    <span class="tag">Armado &amp; despacho</span>
+  </div>
+  <div class="counter-pill" id="counterPill"></div>
+</div>
+
+<main>
+  <div class="form-col">
+
+    <details class="tip">
+      <summary>¿Todavía no tenés impresora? Ideas para elegir una</summary>
+      <p>
+        Lo más simple y confiable: una <strong>impresora térmica de tickets USB de 80&nbsp;mm</strong> (se las conoce como "comanderas", marcas típicas: Xprinter, GPrinter). Se conecta por cable a tu PC, Windows la reconoce como una impresora más, y desde acá apretás "Imprimir" igual que con cualquier página — sin apps intermedias. Suelen rondar los $50.000–$90.000 ARS; buscá "impresora térmica USB 80mm comandera" en MercadoLibre para comparar precios del momento.
+      </p>
+      <p>
+        Si preferís imprimir directo desde el celular sin PC, hay opciones <strong>térmicas Bluetooth de 58&nbsp;mm</strong> más económicas (~$50.000 ARS), pero casi siempre necesitan la app propia del fabricante — no siempre aparecen en el diálogo de impresión del navegador. Si vas por ese camino, confirmá en la descripción del producto que soporte impresión desde navegador o que tenga app de "impresión ESC/POS" antes de comprar.
+      </p>
+      <p>
+        Mientras decidís: elegí "Hoja A4" abajo e imprimí en cualquier impresora común, o guardá como PDF y mandalo por WhatsApp.
+      </p>
+    </details>
+
+    <div class="panel">
+      <h2>Cliente</h2>
+      <div class="field-row">
+        <div>
+          <label for="fNombre">Nombre</label>
+          <input type="text" id="fNombre" placeholder="Ej: Marina Gómez">
+        </div>
+        <div>
+          <label for="fTelefono">Teléfono</label>
+          <input type="tel" id="fTelefono" placeholder="11 2345 6789">
+        </div>
+      </div>
+
+      <h2>Entrega</h2>
+      <div class="seg" id="segEntrega">
+        <button type="button" data-val="Delivery" class="active">Delivery</button>
+        <button type="button" data-val="Retiro">Retiro</button>
+      </div>
+      <div class="field-row">
+        <div id="direccionWrap">
+          <label for="fDireccion">Dirección</label>
+          <input type="text" id="fDireccion" placeholder="Calle, número, entre calles">
+        </div>
+        <div>
+          <label for="fHorario">Horario de entrega</label>
+          <input type="time" id="fHorario">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Pedido</h2>
+      <div class="group-label">Combos</div>
+      <div class="item-list" id="combosList"></div>
+
+      <div class="group-label">Piezas sueltas (de a 4)</div>
+      <div class="item-list" id="piezasList"></div>
+      <div class="piezas-note" id="piezasNote"></div>
+
+      <h2 style="margin-top:20px;">Notas</h2>
+      <textarea id="fNotas" placeholder="Ej: sin jengibre, tocar timbre 2 veces, dejar en portería..."></textarea>
+    </div>
+  </div>
+
+  <div class="preview-col">
+    <div class="preview-toolbar">
+      <div class="seg" id="segAncho">
+        <button type="button" data-val="58">Angosto 58mm</button>
+        <button type="button" data-val="80" class="active">Angosto 80mm</button>
+        <button type="button" data-val="a4">Hoja A4</button>
+      </div>
+    </div>
+
+    <div class="ticket-stage">
+      <div class="ticket" id="ticket" data-width="80">
+        <div class="t-center">
+          <div class="t-title">TOMWANDA SUSHI</div>
+          <div class="t-sub">Sushi artesanal para eventos</div>
+        </div>
+        <hr class="t-hr">
+        <div class="t-row"><span class="t-label">Comanda</span><span id="tNum">#0001</span></div>
+        <div class="t-row"><span class="t-label">Fecha</span><span id="tFecha">—</span></div>
+        <hr class="t-hr">
+        <div class="t-row"><span class="t-label">Cliente</span><span id="tCliente">—</span></div>
+        <div class="t-row"><span class="t-label">Tel.</span><span id="tTelefono">—</span></div>
+        <div class="t-row"><span class="t-label">Entrega</span><span id="tEntregaTipo">Delivery</span></div>
+        <div class="t-row" id="tDireccionRow"><span class="t-label">Dirección</span><span id="tDireccion">—</span></div>
+        <div class="t-row"><span class="t-label">Horario</span><span id="tHorario">—</span></div>
+        <hr class="t-hr">
+        <div id="tItems"></div>
+        <hr class="t-hr">
+        <div class="t-total"><span>TOTAL</span><span id="tTotal">$0</span></div>
+        <div id="tNotasWrap" style="display:none;">
+          <hr class="t-hr">
+          <div class="t-label">Notas</div>
+          <div class="t-notas" id="tNotas"></div>
+        </div>
+        <div class="t-foot">Gracias por tu pedido 🍣<br>wa.me/5491166191696</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btnImprimir">Imprimir comanda</button>
+      <button class="btn btn-ghost" id="btnNueva">Nueva comanda</button>
+    </div>
+
+    <div class="history">
+      <h3>Últimas comandas</h3>
+      <div id="historyList"><div class="history-empty">Todavía no imprimiste ninguna.</div></div>
+    </div>
+  </div>
+</main>
+
+<footer class="credit">Herramienta interna de Tomwanda Sushi — los datos se guardan solo en este navegador.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var COMBOS = [
+    {n:"Tomwanda Clásico Mini", p:16400},
+    {n:"Tomwanda Premium Mini", p:27200},
+    {n:"Degustación de Nigiris", p:25300},
+    {n:"Tomwanda Clásico", p:28100},
+    {n:"Tomwanda Premium", p:39000},
+    {n:"Tomwanda Clásico Grande", p:42800},
+    {n:"Tomwanda Premium Grande", p:54000}
+  ];
+  var PIEZAS = [
+    {n:"New York Phila", p4:7200},
+    {n:"California", p4:5800},
+    {n:"Mex Roll", p4:6700},
+    {n:"2 Salmones", p4:6000}
+  ];
+
+  var state = {
+    nombre:"", telefono:"", entrega:"Delivery", direccion:"", horario:"", notas:"",
+    combos: COMBOS.map(function(){return 0;}),
+    piezas: PIEZAS.map(function(){return 0;}),
+    ancho: "80"
+  };
+
+  function money(n){
+    return "$" + Math.round(n).toLocaleString("es-AR");
+  }
+
+  // ---------- build combo/pieza pickers ----------
+  var combosList = document.getElementById("combosList");
+  COMBOS.forEach(function(c, i){
+    var row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML =
+      '<div class="item-name"><strong>' + c.n + '</strong></div>' +
+      '<div class="item-price">' + money(c.p) + '</div>' +
+      '<div class="stepper">' +
+        '<button type="button" data-act="dec" aria-label="Restar ' + c.n + '">−</button>' +
+        '<span class="qty" id="cq' + i + '">0</span>' +
+        '<button type="button" data-act="inc" aria-label="Sumar ' + c.n + '">+</button>' +
+      '</div>';
+    var btns = row.querySelectorAll("button");
+    btns[0].addEventListener("click", function(){ changeCombo(i, -1); });
+    btns[1].addEventListener("click", function(){ changeCombo(i, 1); });
+    combosList.appendChild(row);
+  });
+
+  var piezasList = document.getElementById("piezasList");
+  PIEZAS.forEach(function(p, i){
+    var row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML =
+      '<div class="item-name"><strong>' + p.n + '</strong><small>' + money(p.p4) + ' cada 4</small></div>' +
+      '<div class="stepper">' +
+        '<button type="button" data-act="dec" aria-label="Restar ' + p.n + '">−</button>' +
+        '<span class="qty" id="pq' + i + '">0</span>' +
+        '<button type="button" data-act="inc" aria-label="Sumar ' + p.n + '">+4</button>' +
+      '</div>';
+    var btns = row.querySelectorAll("button");
+    btns[0].addEventListener("click", function(){ changePieza(i, -4); });
+    btns[1].addEventListener("click", function(){ changePieza(i, 4); });
+    piezasList.appendChild(row);
+  });
+
+  function changeCombo(i, d){
+    state.combos[i] = Math.max(0, state.combos[i] + d);
+    document.getElementById("cq" + i).textContent = state.combos[i];
+    render();
+  }
+  function changePieza(i, d){
+    state.piezas[i] = Math.max(0, state.piezas[i] + d);
+    document.getElementById("pq" + i).textContent = state.piezas[i];
+    render();
+  }
+
+  // ---------- form bindings ----------
+  document.getElementById("fNombre").addEventListener("input", function(e){ state.nombre = e.target.value; render(); });
+  document.getElementById("fTelefono").addEventListener("input", function(e){ state.telefono = e.target.value; render(); });
+  document.getElementById("fDireccion").addEventListener("input", function(e){ state.direccion = e.target.value; render(); });
+  document.getElementById("fHorario").addEventListener("input", function(e){ state.horario = e.target.value; render(); });
+  document.getElementById("fNotas").addEventListener("input", function(e){ state.notas = e.target.value; render(); });
+
+  var segEntrega = document.getElementById("segEntrega");
+  segEntrega.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      segEntrega.querySelectorAll("button").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      state.entrega = b.dataset.val;
+      document.getElementById("direccionWrap").style.display = (state.entrega === "Retiro") ? "none" : "block";
+      render();
+    });
+  });
+
+  var segAncho = document.getElementById("segAncho");
+  segAncho.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      segAncho.querySelectorAll("button").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      state.ancho = b.dataset.val;
+      document.getElementById("ticket").dataset.width = state.ancho;
+    });
+  });
+
+  // ---------- comanda counter (per-browser, localStorage) ----------
+  function getCounter(){
+    try{
+      var v = parseInt(localStorage.getItem("tomwanda_comanda_counter") || "0", 10);
+      return isNaN(v) ? 0 : v;
+    }catch(e){ return 0; }
+  }
+  function setCounter(v){
+    try{ localStorage.setItem("tomwanda_comanda_counter", String(v)); }catch(e){}
+  }
+  function nextCounterPreview(){
+    return getCounter() + 1;
+  }
+
+  function refreshCounterPill(){
+    var pill = document.getElementById("counterPill");
+    pill.innerHTML = "Próxima comanda: #" + String(nextCounterPreview()).padStart(4,"0") +
+      ' <button type="button" id="resetCounter">reiniciar numeración</button>';
+    document.getElementById("resetCounter").addEventListener("click", function(){
+      if(confirm("¿Reiniciar la numeración de comandas a #0001?")){
+        setCounter(0);
+        refreshCounterPill();
+        render();
+      }
+    });
+  }
+
+  // ---------- render preview ----------
+  function render(){
+    document.getElementById("tNum").textContent = "#" + String(nextCounterPreview()).padStart(4,"0");
+
+    var now = new Date();
+    var fecha = now.toLocaleDateString("es-AR") + " " + now.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+    document.getElementById("tFecha").textContent = fecha;
+
+    document.getElementById("tCliente").textContent = state.nombre || "—";
+    document.getElementById("tTelefono").textContent = state.telefono || "—";
+    document.getElementById("tEntregaTipo").textContent = state.entrega;
+
+    var dirRow = document.getElementById("tDireccionRow");
+    if(state.entrega === "Retiro"){
+      dirRow.style.display = "none";
+    }else{
+      dirRow.style.display = "flex";
+      document.getElementById("tDireccion").textContent = state.direccion || "—";
+    }
+    document.getElementById("tHorario").textContent = state.horario || "—";
+
+    var itemsWrap = document.getElementById("tItems");
+    itemsWrap.innerHTML = "";
+    var total = 0;
+    var any = false;
+
+    COMBOS.forEach(function(c, i){
+      var q = state.combos[i];
+      if(q > 0){
+        any = true;
+        var sub = c.p * q;
+        total += sub;
+        var d = document.createElement("div");
+        d.className = "t-item";
+        d.innerHTML = '<span class="n">' + q + 'x ' + c.n + '</span><span class="p">' + money(sub) + '</span>';
+        itemsWrap.appendChild(d);
+      }
+    });
+    PIEZAS.forEach(function(p, i){
+      var q = state.piezas[i];
+      if(q > 0){
+        any = true;
+        var sub = (p.p4 / 4) * q;
+        total += sub;
+        var d = document.createElement("div");
+        d.className = "t-item";
+        d.innerHTML = '<span class="n">' + q + 'pz ' + p.n + '</span><span class="p">' + money(sub) + '</span>';
+        itemsWrap.appendChild(d);
+      }
+    });
+
+    if(!any){
+      itemsWrap.innerHTML = '<div class="t-empty">Sin ítems todavía</div>';
+    }
+
+    document.getElementById("tTotal").textContent = money(total);
+
+    var totalPiezasSueltas = state.piezas.reduce(function(a,b){return a+b;}, 0);
+    var note = document.getElementById("piezasNote");
+    if(totalPiezasSueltas > 0 && totalPiezasSueltas < 8){
+      note.textContent = "Mínimo habitual: 8 piezas sueltas combinadas (llevás " + totalPiezasSueltas + ").";
+      note.className = "piezas-note warn";
+    }else{
+      note.textContent = "";
+      note.className = "piezas-note";
+    }
+
+    if(state.notas && state.notas.trim()){
+      document.getElementById("tNotasWrap").style.display = "block";
+      document.getElementById("tNotas").textContent = state.notas.trim();
+    }else{
+      document.getElementById("tNotasWrap").style.display = "none";
+    }
+  }
+
+  // ---------- history ----------
+  function loadHistory(){
+    try{
+      return JSON.parse(localStorage.getItem("tomwanda_comanda_history") || "[]");
+    }catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try{ localStorage.setItem("tomwanda_comanda_history", JSON.stringify(list.slice(0,15))); }catch(e){}
+  }
+  function renderHistory(){
+    var list = loadHistory();
+    var wrap = document.getElementById("historyList");
+    if(!list.length){
+      wrap.innerHTML = '<div class="history-empty">Todavía no imprimiste ninguna.</div>';
+      return;
+    }
+    wrap.innerHTML = "";
+    list.forEach(function(h){
+      var row = document.createElement("div");
+      row.className = "history-item";
+      row.innerHTML =
+        '<span>#' + h.num + ' — ' + (h.nombre || "sin nombre") + ' — ' + money(h.total) + '</span>' +
+        '<button type="button">reimprimir</button>';
+      row.querySelector("button").addEventListener("click", function(){
+        applySnapshot(h);
+      });
+      wrap.appendChild(row);
+    });
+  }
+  function applySnapshot(h){
+    document.getElementById("fNombre").value = h.nombre || "";
+    document.getElementById("fTelefono").value = h.telefono || "";
+    document.getElementById("fDireccion").value = h.direccion || "";
+    document.getElementById("fHorario").value = h.horario || "";
+    document.getElementById("fNotas").value = h.notas || "";
+    state.nombre = h.nombre || "";
+    state.telefono = h.telefono || "";
+    state.direccion = h.direccion || "";
+    state.horario = h.horario || "";
+    state.notas = h.notas || "";
+    state.entrega = h.entrega || "Delivery";
+    segEntrega.querySelectorAll("button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.val === state.entrega);
+    });
+    document.getElementById("direccionWrap").style.display = (state.entrega === "Retiro") ? "none" : "block";
+    state.combos = (h.combos || COMBOS.map(function(){return 0;})).slice();
+    state.piezas = (h.piezas || PIEZAS.map(function(){return 0;})).slice();
+    state.combos.forEach(function(q, i){ var el = document.getElementById("cq"+i); if(el) el.textContent = q; });
+    state.piezas.forEach(function(q, i){ var el = document.getElementById("pq"+i); if(el) el.textContent = q; });
+    render();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  // ---------- actions ----------
+  document.getElementById("btnImprimir").addEventListener("click", function(){
+    var total = 0;
+    COMBOS.forEach(function(c,i){ total += c.p * state.combos[i]; });
+    PIEZAS.forEach(function(p,i){ total += (p.p4/4) * state.piezas[i]; });
+
+    var used = getCounter() + 1;
+    setCounter(used);
+
+    var hist = loadHistory();
+    hist.unshift({
+      num: String(used).padStart(4,"0"),
+      nombre: state.nombre, telefono: state.telefono, entrega: state.entrega,
+      direccion: state.direccion, horario: state.horario, notas: state.notas,
+      combos: state.combos.slice(), piezas: state.piezas.slice(), total: total
+    });
+    saveHistory(hist);
+    renderHistory();
+    refreshCounterPill();
+    render();
+
+    window.print();
+  });
+
+  document.getElementById("btnNueva").addEventListener("click", function(){
+    if(!confirm("¿Vaciar el formulario para una comanda nueva?")) return;
+    document.getElementById("fNombre").value = "";
+    document.getElementById("fTelefono").value = "";
+    document.getElementById("fDireccion").value = "";
+    document.getElementById("fHorario").value = "";
+    document.getElementById("fNotas").value = "";
+    state.nombre = ""; state.telefono = ""; state.direccion = ""; state.horario = ""; state.notas = "";
+    state.combos = COMBOS.map(function(){return 0;});
+    state.piezas = PIEZAS.map(function(){return 0;});
+    state.combos.forEach(function(q, i){ document.getElementById("cq"+i).textContent = 0; });
+    state.piezas.forEach(function(q, i){ document.getElementById("pq"+i).textContent = 0; });
+    render();
+  });
+
+  refreshCounterPill();
+  renderHistory();
+  render();
+  setInterval(function(){
+    document.getElementById("tFecha").textContent =
+      new Date().toLocaleDateString("es-AR") + " " + new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+  }, 30000);
+})();
+</script>
+</body>
+</html>
