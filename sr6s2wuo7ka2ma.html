@@ -124,16 +124,23 @@
   }
 
   main{
-    max-width:1180px;
+    max-width:1640px;
     margin:0 auto;
-    padding:clamp(16px,4vw,32px);
+    padding:clamp(16px,3vw,32px);
     display:grid;
-    grid-template-columns:minmax(0,1.15fr) minmax(320px,0.85fr);
-    gap:clamp(18px,3vw,32px);
+    grid-template-columns:minmax(280px,0.8fr) minmax(360px,1.15fr) minmax(340px,1fr);
+    gap:clamp(16px,2vw,28px);
     align-items:start;
+  }
+  @media (max-width:1280px){
+    main{grid-template-columns:1fr 1fr;}
+    .col-cliente{grid-column:1; grid-row:1;}
+    .col-pedido{grid-column:1; grid-row:2;}
+    .preview-col{grid-column:2; grid-row:1 / span 2;}
   }
   @media (max-width:880px){
     main{grid-template-columns:1fr;}
+    .col-cliente, .col-pedido, .preview-col{grid-column:1; grid-row:auto;}
   }
 
   /* ---------- form ---------- */
@@ -202,7 +209,8 @@
   }
 
   /* item pickers */
-  .item-list{display:flex; flex-direction:column; gap:8px;}
+  .item-list{display:grid; grid-template-columns:1fr 1fr; gap:8px 12px;}
+  @media (max-width:600px){ .item-list{grid-template-columns:1fr;} }
   .item-row{
     display:flex;
     align-items:center;
@@ -403,12 +411,24 @@
     font-size:0.83rem;
   }
   .history-item:last-child{border-bottom:none;}
+  .history-item .history-actions{display:flex; gap:12px; flex-shrink:0;}
   .history-item button{
     background:none; border:none; color:var(--terracota-dark);
     text-decoration:underline; cursor:pointer; font:inherit; font-size:0.8rem;
     padding:0;
   }
+  .history-item button.danger{color:var(--warn);}
   .history-empty{color:var(--ink-muted); font-size:0.83rem; font-style:italic;}
+
+  .dia-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px 16px;}
+  .dia-stat{display:flex; flex-direction:column; gap:3px;}
+  .dia-label{
+    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--ink-muted);
+  }
+  .dia-value{font-size:1.2rem; font-weight:700; font-variant-numeric:tabular-nums;}
+  .dia-value.ok{color:var(--ok);}
+  .dia-note{font-size:0.74rem; color:var(--ink-muted); margin-top:14px; line-height:1.45;}
 
   footer.credit{
     text-align:center;
@@ -419,12 +439,30 @@
 
   /* ---------- print ---------- */
   @media print{
-    body *{visibility:hidden;}
-    .ticket-stage, .ticket-stage *{visibility:visible;}
+    /* Hide everything except the ticket itself. Using display:none (not
+       visibility:hidden) so hidden elements collapse out of the flow —
+       otherwise their layout space survives and pushes the ticket onto
+       a second, mostly-blank page. */
+    .topbar, .col-cliente, .col-pedido, .preview-toolbar, .actions, .dia-panel, .history, footer.credit{
+      display:none !important;
+    }
+    body{background:#fff !important; margin:0;}
+    main{
+      display:block !important;
+      max-width:none !important;
+      margin:0 !important;
+      padding:0 !important;
+      gap:0 !important;
+    }
+    .preview-col{
+      position:static !important;
+      display:block !important;
+    }
     .ticket-stage{
       background:#fff !important;
       padding:0 !important;
-      position:absolute; top:0; left:0; width:100%;
+      display:flex;
+      justify-content:center;
     }
     .ticket{
       box-shadow:none !important;
@@ -450,7 +488,7 @@
 </div>
 
 <main>
-  <div class="form-col">
+  <div class="col-cliente">
 
     <details class="tip">
       <summary>¿Todavía no tenés impresora? Ideas para elegir una</summary>
@@ -494,7 +532,9 @@
         </div>
       </div>
     </div>
+  </div>
 
+  <div class="col-pedido">
     <div class="panel">
       <h2>Pedido</h2>
       <div class="group-label">Combos</div>
@@ -542,13 +582,24 @@
           <div class="t-label">Notas</div>
           <div class="t-notas" id="tNotas"></div>
         </div>
-        <div class="t-foot">Gracias por tu pedido 🍣<br>wa.me/5491166191696</div>
+        <div class="t-foot">Gracias por tu pedido 🍣<br>wa.me/5491125560905</div>
       </div>
     </div>
 
     <div class="actions">
       <button class="btn btn-primary" id="btnImprimir">Imprimir comanda</button>
       <button class="btn btn-ghost" id="btnNueva">Nueva comanda</button>
+    </div>
+
+    <div class="panel dia-panel">
+      <h2>Resumen del día</h2>
+      <div class="dia-grid">
+        <div class="dia-stat"><span class="dia-label">Pedidos</span><span class="dia-value" id="rdPedidos">0</span></div>
+        <div class="dia-stat"><span class="dia-label">Ingresos</span><span class="dia-value" id="rdIngresos">$0</span></div>
+        <div class="dia-stat"><span class="dia-label">Costo estimado</span><span class="dia-value" id="rdCosto">$0</span></div>
+        <div class="dia-stat"><span class="dia-label">Ganancia estimada</span><span class="dia-value ok" id="rdGanancia">$0</span></div>
+      </div>
+      <p class="dia-note">Estimado con los costos de insumos cargados el 20/08/2026 (auditoría del Excel de costos). No se actualiza solo si cambian precios de compra — avisame cuando cargues facturas nuevas y te actualizo los valores acá también. Solo cuenta lo impreso hoy desde este navegador.</p>
     </div>
 
     <div class="history">
@@ -564,20 +615,24 @@
 (function(){
   "use strict";
 
+  // c / c4 = costo estimado (insumos), tomado de la auditoría del Excel de
+  // costos del 20/08/2026 (Tomwanda_Sushi_Costos_v31.xlsx). Es un valor fijo
+  // cargado a mano, no se sincroniza solo con el Excel — si cambian precios
+  // de compra hay que actualizarlo acá también.
   var COMBOS = [
-    {n:"Tomwanda Clásico Mini", p:16400},
-    {n:"Tomwanda Premium Mini", p:27200},
-    {n:"Degustación de Nigiris", p:25300},
-    {n:"Tomwanda Clásico", p:28100},
-    {n:"Tomwanda Premium", p:39000},
-    {n:"Tomwanda Clásico Grande", p:42800},
-    {n:"Tomwanda Premium Grande", p:54000}
+    {n:"Tomwanda Clásico Mini", p:16400, c:8199},
+    {n:"Tomwanda Premium Mini", p:27200, c:7763},
+    {n:"Degustación de Nigiris", p:25300, c:2700},
+    {n:"Tomwanda Clásico", p:28100, c:15595},
+    {n:"Tomwanda Premium", p:39000, c:13016},
+    {n:"Tomwanda Clásico Grande", p:42800, c:23764},
+    {n:"Tomwanda Premium Grande", p:54000, c:18011}
   ];
   var PIEZAS = [
-    {n:"New York Phila", p4:7200},
-    {n:"California", p4:5800},
-    {n:"Mex Roll", p4:6700},
-    {n:"2 Salmones", p4:6000}
+    {n:"New York Phila", p4:7200, c4:2406},
+    {n:"California", p4:5800, c4:1941},
+    {n:"Mex Roll", p4:6700, c4:2184},
+    {n:"2 Salmones", p4:6000, c4:1989}
   ];
 
   var state = {
@@ -769,13 +824,16 @@
   }
 
   // ---------- history ----------
+  // El log completo se guarda para poder calcular el resumen del día (hasta
+  // 300 comandas, de sobra); la lista visible de "reimprimir" solo muestra
+  // las últimas 15 para no hacerse eterna.
   function loadHistory(){
     try{
       return JSON.parse(localStorage.getItem("tomwanda_comanda_history") || "[]");
     }catch(e){ return []; }
   }
   function saveHistory(list){
-    try{ localStorage.setItem("tomwanda_comanda_history", JSON.stringify(list.slice(0,15))); }catch(e){}
+    try{ localStorage.setItem("tomwanda_comanda_history", JSON.stringify(list.slice(0,300))); }catch(e){}
   }
   function renderHistory(){
     var list = loadHistory();
@@ -785,17 +843,63 @@
       return;
     }
     wrap.innerHTML = "";
-    list.forEach(function(h){
+    list.slice(0,15).forEach(function(h){
       var row = document.createElement("div");
       row.className = "history-item";
       row.innerHTML =
         '<span>#' + h.num + ' — ' + (h.nombre || "sin nombre") + ' — ' + money(h.total) + '</span>' +
-        '<button type="button">reimprimir</button>';
-      row.querySelector("button").addEventListener("click", function(){
+        '<div class="history-actions">' +
+          '<button type="button" class="btn-reprint">reimprimir</button>' +
+          '<button type="button" class="danger btn-delete">eliminar</button>' +
+        '</div>';
+      row.querySelector(".btn-reprint").addEventListener("click", function(){
         applySnapshot(h);
+      });
+      row.querySelector(".btn-delete").addEventListener("click", function(){
+        deleteHistoryEntry(h);
       });
       wrap.appendChild(row);
     });
+  }
+  function deleteHistoryEntry(entry){
+    if(!confirm("¿Eliminar la comanda #" + entry.num + " del historial? No se puede deshacer.")) return;
+    var list = loadHistory();
+    var idx = list.findIndex(function(h){ return h.num === entry.num && h.ts === entry.ts; });
+    if(idx === -1) return;
+    list.splice(idx, 1);
+    saveHistory(list);
+    // Si era la última comanda impresa y nadie imprimió otra después, liberamos
+    // su número para que la próxima comanda lo reuse en vez de dejar un hueco.
+    // Si es una comanda más vieja, el número queda "vacante" a propósito (como
+    // una factura anulada) para no desordenar la numeración de las demás.
+    if(idx === 0 && parseInt(entry.num, 10) === getCounter()){
+      setCounter(getCounter() - 1);
+      refreshCounterPill();
+      render();
+    }
+    renderHistory();
+    renderResumenDia();
+  }
+
+  // ---------- resumen del día ----------
+  function esHoy(iso){
+    if(!iso) return false;
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return false;
+    var now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }
+  function renderResumenDia(){
+    var hoy = loadHistory().filter(function(h){ return esHoy(h.ts); });
+    var ingresos = 0, costo = 0;
+    hoy.forEach(function(h){
+      ingresos += h.total || 0;
+      costo += (typeof h.costo === "number") ? h.costo : 0;
+    });
+    document.getElementById("rdPedidos").textContent = hoy.length;
+    document.getElementById("rdIngresos").textContent = money(ingresos);
+    document.getElementById("rdCosto").textContent = money(costo);
+    document.getElementById("rdGanancia").textContent = money(ingresos - costo);
   }
   function applySnapshot(h){
     document.getElementById("fNombre").value = h.nombre || "";
@@ -821,32 +925,8 @@
     window.scrollTo({top:0, behavior:"smooth"});
   }
 
-  // ---------- actions ----------
-  document.getElementById("btnImprimir").addEventListener("click", function(){
-    var total = 0;
-    COMBOS.forEach(function(c,i){ total += c.p * state.combos[i]; });
-    PIEZAS.forEach(function(p,i){ total += (p.p4/4) * state.piezas[i]; });
-
-    var used = getCounter() + 1;
-    setCounter(used);
-
-    var hist = loadHistory();
-    hist.unshift({
-      num: String(used).padStart(4,"0"),
-      nombre: state.nombre, telefono: state.telefono, entrega: state.entrega,
-      direccion: state.direccion, horario: state.horario, notas: state.notas,
-      combos: state.combos.slice(), piezas: state.piezas.slice(), total: total
-    });
-    saveHistory(hist);
-    renderHistory();
-    refreshCounterPill();
-    render();
-
-    window.print();
-  });
-
-  document.getElementById("btnNueva").addEventListener("click", function(){
-    if(!confirm("¿Vaciar el formulario para una comanda nueva?")) return;
+  // ---------- reset ----------
+  function resetForm(){
     document.getElementById("fNombre").value = "";
     document.getElementById("fTelefono").value = "";
     document.getElementById("fDireccion").value = "";
@@ -857,11 +937,52 @@
     state.piezas = PIEZAS.map(function(){return 0;});
     state.combos.forEach(function(q, i){ document.getElementById("cq"+i).textContent = 0; });
     state.piezas.forEach(function(q, i){ document.getElementById("pq"+i).textContent = 0; });
+    state.entrega = "Delivery";
+    segEntrega.querySelectorAll("button").forEach(function(b){
+      b.classList.toggle("active", b.dataset.val === "Delivery");
+    });
+    document.getElementById("direccionWrap").style.display = "block";
     render();
+  }
+
+  // ---------- actions ----------
+  document.getElementById("btnImprimir").addEventListener("click", function(){
+    var total = 0, costo = 0;
+    COMBOS.forEach(function(c,i){ total += c.p * state.combos[i]; costo += c.c * state.combos[i]; });
+    PIEZAS.forEach(function(p,i){ total += (p.p4/4) * state.piezas[i]; costo += (p.c4/4) * state.piezas[i]; });
+
+    var used = getCounter() + 1;
+    setCounter(used);
+
+    var hist = loadHistory();
+    hist.unshift({
+      num: String(used).padStart(4,"0"),
+      ts: new Date().toISOString(),
+      nombre: state.nombre, telefono: state.telefono, entrega: state.entrega,
+      direccion: state.direccion, horario: state.horario, notas: state.notas,
+      combos: state.combos.slice(), piezas: state.piezas.slice(), total: total, costo: costo
+    });
+    saveHistory(hist);
+    renderHistory();
+    renderResumenDia();
+    refreshCounterPill();
+    render();
+
+    window.print();
+
+    // Se vacía solo después de imprimir para que no se pueda apretar
+    // "Imprimir" varias veces seguidas y duplicar sin querer la misma comanda.
+    resetForm();
+  });
+
+  document.getElementById("btnNueva").addEventListener("click", function(){
+    if(!confirm("¿Vaciar el formulario para una comanda nueva?")) return;
+    resetForm();
   });
 
   refreshCounterPill();
   renderHistory();
+  renderResumenDia();
   render();
   setInterval(function(){
     document.getElementById("tFecha").textContent =
