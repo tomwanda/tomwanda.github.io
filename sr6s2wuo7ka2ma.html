@@ -2,9 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>Comandas Tomwanda</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   :root{
     --cream:#f4ecdd;
@@ -474,6 +473,7 @@
     @page{margin:0;}
   }
 </style>
+<meta name="robots" content="noindex, nofollow">
 </head>
 <body>
 <div class="topbar">
@@ -608,7 +608,7 @@
         <div id="rkList"></div>
       </details>
 
-      <p class="dia-note">Estimado con los costos de insumos cargados el 20/08/2026 (auditoría del Excel de costos). No se actualiza solo si cambian precios de compra — avisame cuando cargues facturas nuevas y te actualizo los valores acá también. Los números de arriba son de hoy; el ranking mira los últimos 14 días. Todo se guarda en tu equipo, no en internet, y los pedidos de más de 14 días se van borrando solos para no acumular.</p>
+      <p class="dia-note">Estimado con los costos de insumos actualizados el 22/08/2026 (facturas Naccato del 20/08 ya cargadas al Excel de costos). No se actualiza solo si cambian precios de compra — avisame cuando cargues facturas nuevas y te actualizo los valores acá también. Los números de arriba son de hoy; el ranking mira los últimos 14 días. Todo se guarda en tu equipo, no en internet, y los pedidos de más de 14 días se van borrando solos para no acumular.</p>
     </div>
 
     <div class="history">
@@ -625,24 +625,25 @@
   "use strict";
 
   // c / c4 = costo estimado (insumos), tomado de la auditoría del Excel de
-  // costos del 20/08/2026 (Tomwanda_Sushi_Costos_v31.xlsx). Es un valor fijo
-  // cargado a mano, no se sincroniza solo con el Excel — si cambian precios
-  // de compra hay que actualizarlo acá también.
+  // costos del 22/08/2026 (Tomwanda_Sushi_Costos_v32.xlsx, con los precios
+  // reales de las facturas Naccato del 20/08/2026 ya cargados). Es un valor
+  // fijo cargado a mano, no se sincroniza solo con el Excel — si cambian
+  // precios de compra hay que actualizarlo acá también.
   // pz = piezas totales que trae el combo (para el desglose de producción del día)
   var COMBOS = [
-    {n:"Tomwanda Clásico Mini", p:16400, c:8199, pz:12},
-    {n:"Tomwanda Premium Mini", p:27200, c:7763, pz:12},
-    {n:"Degustación de Nigiris", p:25300, c:2700, pz:12},
-    {n:"Tomwanda Clásico", p:28100, c:15595, pz:24},
-    {n:"Tomwanda Premium", p:39000, c:13016, pz:24},
-    {n:"Tomwanda Clásico Grande", p:42800, c:23764, pz:36},
-    {n:"Tomwanda Premium Grande", p:54000, c:18011, pz:36}
+    {n:"Tomwanda Clásico Mini", p:16400, c:8197, pz:12},
+    {n:"Tomwanda Premium Mini", p:27200, c:7759, pz:12},
+    {n:"Degustación de Nigiris", p:25300, c:3874, pz:12},
+    {n:"Tomwanda Clásico", p:28100, c:15576, pz:24},
+    {n:"Tomwanda Premium", p:39000, c:13005, pz:24},
+    {n:"Tomwanda Clásico Grande", p:42800, c:23738, pz:36},
+    {n:"Tomwanda Premium Grande", p:54000, c:17991, pz:36}
   ];
   var PIEZAS = [
-    {n:"New York Phila", p4:7200, c4:2406},
-    {n:"California", p4:5800, c4:1941},
-    {n:"Mex Roll", p4:6700, c4:2184},
-    {n:"2 Salmones", p4:6000, c4:1989}
+    {n:"New York Phila", p4:7200, c4:2401},
+    {n:"California", p4:5800, c4:1936},
+    {n:"Mex Roll", p4:6700, c4:2178},
+    {n:"2 Salmones", p4:6000, c4:1979}
   ];
 
   var state = {
@@ -1078,5 +1079,5 @@
   }, 30000);
 })();
 </script>
-</body>
+
 </html>
