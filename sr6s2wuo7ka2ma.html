@@ -531,6 +531,16 @@
 
   <div class="col-pedido">
     <div class="panel">
+      <h2>Pegar pedido de WhatsApp</h2>
+      <label for="fPegado">Pegá acá el mensaje del cliente (opcional — reconoce el formato de la página de pedidos)</label>
+      <textarea id="fPegado" style="min-height:90px;" placeholder="Hola! Quiero hacer este pedido:&#10;&#10;• 2x Tomwanda Clásico Mini ($16.400 c/u)&#10;• 4 piezas de New York Phila (piezas sueltas, $7.200 c/4 piezas)&#10;&#10;Total: $23.400"></textarea>
+      <div class="actions" style="margin-top:0;">
+        <button type="button" class="btn btn-primary" id="btnLeerPedido">Leer pedido</button>
+      </div>
+      <p class="piezas-note" id="pegadoStatus"></p>
+    </div>
+
+    <div class="panel">
       <h2>Pedido</h2>
       <div class="group-label">Combos</div>
       <div class="item-list" id="combosList"></div>
@@ -729,6 +739,103 @@
       state.ancho = b.dataset.val;
       document.getElementById("ticket").dataset.width = state.ancho;
     });
+  });
+
+  // ---------- pegar pedido de WhatsApp ----------
+  // El mensaje que arma tomwanda.github.io/index.html (botón "Confirmá todo
+  // junto desde el botón de WhatsApp") tiene siempre este formato exacto:
+  //   • 2x Tomwanda Clásico Mini ($16.400 c/u)
+  //   • 4 piezas de New York Phila (piezas sueltas, $7.200 c/4 piezas)
+  //   Total: $23.400
+  // Achicamos ese texto pegado a cantidades por producto, matcheando el
+  // nombre contra el catálogo COMBOS/PIEZAS de acá arriba (case/acentos
+  // insensible). Lo que no matchea NO se descarta en silencio: se lista en
+  // pegadoStatus para cargarlo a mano con los steppers de abajo.
+  function normalizeName(s){
+    return String(s || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function findComboIndex(name){
+    var n = normalizeName(name);
+    for(var i=0;i<COMBOS.length;i++){ if(normalizeName(COMBOS[i].n) === n) return i; }
+    return -1;
+  }
+  function findPiezaIndex(name){
+    var n = normalizeName(name);
+    for(var i=0;i<PIEZAS.length;i++){ if(normalizeName(PIEZAS[i].n) === n) return i; }
+    return -1;
+  }
+  function parseMoneyAR(s){
+    return parseInt(String(s).replace(/[^\d]/g, ""), 10) || 0;
+  }
+  function parseWhatsAppOrder(text){
+    var lines = String(text || "").split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
+    var comboRe = /^[•\-\*]\s*(\d+)\s*x\s*(.+?)\s*\(\$?\s*([\d.,]+)\s*c\/u\)\s*$/i;
+    var piezaRe = /^[•\-\*]\s*(\d+)\s*piezas?\s+de\s+(.+?)\s*\(piezas sueltas,\s*\$?\s*([\d.,]+)\s*c\/4\s*piezas\)\s*$/i;
+    var totalRe = /total\s*:?\s*\$?\s*([\d.,]+)/i;
+    var combos = COMBOS.map(function(){ return 0; });
+    var piezas = PIEZAS.map(function(){ return 0; });
+    var unmatched = [];
+    var detectedTotal = null;
+    lines.forEach(function(line){
+      var m = line.match(comboRe);
+      if(m){
+        var idx = findComboIndex(m[2]);
+        if(idx > -1) combos[idx] += parseInt(m[1], 10);
+        else unmatched.push(line);
+        return;
+      }
+      m = line.match(piezaRe);
+      if(m){
+        var idx2 = findPiezaIndex(m[2]);
+        if(idx2 > -1) piezas[idx2] += parseInt(m[1], 10);
+        else unmatched.push(line);
+        return;
+      }
+      if(/total/i.test(line)){
+        var mt = line.match(totalRe);
+        if(mt) detectedTotal = parseMoneyAR(mt[1]);
+      }
+    });
+    return { combos: combos, piezas: piezas, unmatched: unmatched, detectedTotal: detectedTotal };
+  }
+  function setPegadoStatus(msg, warn){
+    var el = document.getElementById("pegadoStatus");
+    el.textContent = msg;
+    el.className = warn ? "piezas-note warn" : "piezas-note";
+  }
+  document.getElementById("btnLeerPedido").addEventListener("click", function(){
+    var res = parseWhatsAppOrder(document.getElementById("fPegado").value);
+    var cargados = res.combos.filter(function(q){ return q > 0; }).length + res.piezas.filter(function(q){ return q > 0; }).length;
+
+    if(cargados === 0 && res.unmatched.length === 0){
+      setPegadoStatus("No encontré ítems en el texto pegado. Revisá que sea el mensaje tal como llega por WhatsApp, o cargá el pedido a mano abajo.", true);
+      return;
+    }
+
+    res.combos.forEach(function(q, i){
+      if(q > 0){ state.combos[i] += q; document.getElementById("cq" + i).textContent = state.combos[i]; }
+    });
+    res.piezas.forEach(function(q, i){
+      if(q > 0){ state.piezas[i] += q; document.getElementById("pq" + i).textContent = state.piezas[i]; }
+    });
+    render();
+
+    var partes = [];
+    if(cargados > 0) partes.push("Se cargaron " + cargados + " producto(s) del pedido.");
+    if(res.unmatched.length){
+      partes.push("No reconocí " + res.unmatched.length + " línea(s) — cargalas a mano: " + res.unmatched.join(" / "));
+    }
+    if(res.detectedTotal != null){
+      var sum = 0;
+      COMBOS.forEach(function(c, i){ sum += c.p * res.combos[i]; });
+      PIEZAS.forEach(function(p, i){ sum += (p.p4 / 4) * res.piezas[i]; });
+      if(Math.abs(sum - res.detectedTotal) > 1){
+        partes.push("Ojo: el total del mensaje (" + money(res.detectedTotal) + ") no coincide con lo cargado (" + money(sum) + ").");
+      }
+    }
+    setPegadoStatus(partes.join(" "), res.unmatched.length > 0);
   });
 
   // ---------- comanda counter (per-browser, localStorage) ----------
@@ -1018,6 +1125,8 @@
     document.getElementById("fDireccion").value = "";
     document.getElementById("fHorario").value = "";
     document.getElementById("fNotas").value = "";
+    document.getElementById("fPegado").value = "";
+    setPegadoStatus("", false);
     state.nombre = ""; state.telefono = ""; state.direccion = ""; state.horario = ""; state.notas = "";
     state.combos = COMBOS.map(function(){return 0;});
     state.piezas = PIEZAS.map(function(){return 0;});
