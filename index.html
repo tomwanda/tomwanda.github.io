@@ -661,6 +661,14 @@
   }
   .piezas-note{font-size:0.76rem; color:var(--text-dim); margin-top:6px;}
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4RTPWPW9E3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4RTPWPW9E3');
+</script>
 </head>
 <body>
 
@@ -841,6 +849,19 @@
   function parsePrice(s){ return parseInt(String(s).replace(/[^\d]/g,""), 10) || 0; }
   function formatARS(n){ return "$" + n.toLocaleString("es-AR"); }
 
+  // ---- Google Analytics: eventos del embudo (evita romper la página si gtag no cargó, ej. adblock) ----
+  function gaEvent(name, params){
+    try { if (typeof gtag === "function") gtag("event", name, params || {}); } catch(e){}
+  }
+  function itemInfo(key){
+    if (isPiezaKey(key)){
+      const p = piezaData(key);
+      return { item_id: key, item_name: p.nombre, item_category: "Piezas sueltas", price: p.precio4 / 4 };
+    }
+    const c = combos[key];
+    return { item_id: String(key), item_name: c.nombre, item_category: "Combo", price: parsePrice(c.precio) };
+  }
+
   function tagFor(c){
     if (c.span) return {cls:"especial", label:"Especial"};
     if (c.nombre.includes("Premium")) return {cls:"premium", label:"Premium"};
@@ -886,6 +907,12 @@
     if (delta > 0){
       document.querySelectorAll(`.qty-val[data-qty-idx="${idx}"]`).forEach(bump);
       if (sourceEl) flyToCart(sourceEl);
+      const info = itemInfo(idx);
+      gaEvent("add_to_cart", {
+        currency: "ARS",
+        value: info.price * delta,
+        items: [{ item_id: info.item_id, item_name: info.item_name, item_category: info.item_category, price: info.price, quantity: delta }]
+      });
     }
   }
   function refreshQtyDisplays(){
@@ -961,6 +988,7 @@
   });
 
   document.getElementById("wa-link-footer").href = `https://wa.me/${WHATSAPP_NUMBER}`;
+  document.getElementById("wa-link-footer").addEventListener("click", () => gaEvent("contact_whatsapp", { source: "footer" }));
 
   // ---- Modal de detalle ----
   const overlay = document.getElementById("modal-overlay");
@@ -991,6 +1019,11 @@
     modalQty.querySelector(".qty-plus").addEventListener("click", () => changeQty(idx, 1, document.getElementById("modal-photo")));
     overlay.classList.add("open");
     document.body.style.overflow = "hidden";
+    const info = itemInfo(idx);
+    gaEvent("view_item", {
+      currency: "ARS", value: info.price,
+      items: [{ item_id: info.item_id, item_name: info.item_name, item_category: info.item_category, price: info.price }]
+    });
   }
   function closeModal(){
     overlay.classList.remove("open");
@@ -1086,6 +1119,14 @@
     if (cartCount() === 0) return;
     const pc = piezasCount();
     if (pc > 0 && pc < PIEZAS_MINIMO) return;
+    gaEvent("generate_lead", {
+      currency: "ARS",
+      value: cartTotal(),
+      items: Object.entries(cart).filter(([,q]) => q > 0).map(([key,q]) => {
+        const info = itemInfo(key);
+        return { item_id: info.item_id, item_name: info.item_name, item_category: info.item_category, price: info.price, quantity: q };
+      })
+    });
     window.open(cartWaLink(), "_blank", "noopener");
     Object.keys(cart).forEach(k => delete cart[k]);
     refreshQtyDisplays();
@@ -1113,6 +1154,7 @@
     if (cartCount() > 0){
       openCartModal();
     } else {
+      gaEvent("contact_whatsapp", { source: "fab_generico" });
       const fabMsg = encodeURIComponent("Hola! Quiero hacer un pedido para un evento 🍣");
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${fabMsg}`, "_blank", "noopener");
     }
