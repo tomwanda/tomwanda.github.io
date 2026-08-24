@@ -210,18 +210,24 @@
     grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
     gap:10px;
   }
-  .gallery-photo{
-    width:100%;
-    height:170px;
-    object-fit:cover;
+  .gallery-frame{
+    background:var(--card-bg);
+    border:1px solid var(--gold);
     border-radius:16px;
-    border:1px solid var(--border);
+    padding:7px;
     box-shadow:0 2px 8px rgba(44,36,24,0.06);
     opacity:0;
     transition:transform .2s ease, box-shadow .2s ease;
   }
-  .gallery-photo.revealed{ animation:card-reveal .55s cubic-bezier(.25,.7,.35,1) forwards; }
-  .gallery-photo:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(44,36,24,0.16); }
+  .gallery-frame.revealed{ animation:card-reveal .55s cubic-bezier(.25,.7,.35,1) forwards; }
+  .gallery-frame:hover{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(44,36,24,0.16); }
+  .gallery-photo{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:10px;
+    display:block;
+  }
 
   .combos-panel{
     background:var(--combos-bg);
@@ -720,12 +726,12 @@
             <div class="occasions">Zona de entrega: San Isidro, Beccar, Martinez y Victoria (Zona Norte)</div>
 
 <div class="gallery-section">
-  <h2 class="section-title">Así se ve nuestro sushi</h2>
+  <h2 class="section-title">Nuestras creaciones</h2>
   <div class="section-hint">Fotos ilustrativas de nuestras presentaciones — no corresponden a un combo puntual del catálogo</div>
   <div class="gallery-grid">
-    <img class="gallery-photo" src="galeria-1.jpg" alt="Bandeja de sushi variado Tomwanda con rolls de salmón, avocado y California" loading="lazy">
-    <img class="gallery-photo" src="galeria-2.jpg" alt="Bandeja de sushi Tomwanda con rolls dorados, sésamo negro y salmón" loading="lazy">
-    <img class="gallery-photo" src="galeria-3.jpg" alt="Barcos de sushi Tomwanda armados para un evento" loading="lazy">
+    <div class="gallery-frame"><img class="gallery-photo" src="galeria-1.jpg" alt="Bandeja de sushi variado Tomwanda con rolls de salmón, avocado y California" loading="lazy"></div>
+    <div class="gallery-frame"><img class="gallery-photo" src="galeria-2.jpg" alt="Bandeja de sushi Tomwanda con rolls dorados, sésamo negro y salmón" loading="lazy"></div>
+    <div class="gallery-frame"><img class="gallery-photo" src="galeria-3.jpg" alt="Barcos de sushi Tomwanda armados para un evento" loading="lazy"></div>
   </div>
 </div>
 
@@ -990,7 +996,7 @@
     });
   }, { threshold: 0.15 });
 
-  document.querySelectorAll(".gallery-photo").forEach(el => revealObserver.observe(el));
+  document.querySelectorAll(".gallery-frame").forEach(el => revealObserver.observe(el));
 
   const grid = document.getElementById("combo-grid");
   combos.forEach((c, idx) => {
