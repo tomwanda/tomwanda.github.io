@@ -545,7 +545,7 @@
       <div class="group-label">Combos</div>
       <div class="item-list" id="combosList"></div>
 
-      <div class="group-label">Piezas sueltas (de a 4)</div>
+      <div class="group-label">Piezas sueltas (rolls de a 4, nigiris de a 2)</div>
       <div class="item-list" id="piezasList"></div>
       <div class="piezas-note" id="piezasNote"></div>
 
@@ -641,18 +641,31 @@
   // pz = piezas totales que trae el combo (para el desglose de producción del día)
   var COMBOS = [
     {n:"Tomwanda Clásico Mini", p:16700, c:8422, pz:12},
-    {n:"Tomwanda Premium Mini", p:27500, c:12984, pz:12},
-    {n:"Degustación de Nigiris", p:25600, c:16049, pz:12},
+    {n:"Tomwanda Premium Mini", p:27500, c:9358, pz:12},
+    {n:"Degustación de Nigiris", p:25600, c:12424, pz:12},
     {n:"Tomwanda Clásico", p:28400, c:16011, pz:24},
-    {n:"Tomwanda Premium", p:39300, c:23252, pz:24},
+    {n:"Tomwanda Premium", p:39300, c:16000, pz:24},
     {n:"Tomwanda Clásico Grande", p:43200, c:24056, pz:36},
-    {n:"Tomwanda Premium Grande", p:54400, c:25598, pz:36}
+    {n:"Tomwanda Premium Grande", p:54400, c:21972, pz:36}
   ];
+  // "bloque" = de a cuántas piezas se vende cada una (rolls de a 4, nigiris de a 2
+  // por ser más caros por pieza). pBloque = precio del bloque, cBloque = costo real.
   var PIEZAS = [
-    {n:"New York Phila", p4:7200, c4:2482},
-    {n:"California", p4:5800, c4:1936},
-    {n:"Mex Roll", p4:6700, c4:2260},
-    {n:"2 Salmones", p4:6000, c4:2041}
+    {n:"New York Phila", pBloque:7200, cBloque:2482, bloque:4},
+    {n:"California", pBloque:5800, cBloque:1936, bloque:4},
+    {n:"Mex Roll", pBloque:6700, cBloque:2260, bloque:4},
+    {n:"2 Salmones", pBloque:6000, cBloque:2041, bloque:4},
+    {n:"Miraflores", pBloque:7800, cBloque:2650, bloque:4},
+    {n:"Gueishas", pBloque:2900, cBloque:987, bloque:4},
+    {n:"Sashimis", pBloque:1800, cBloque:610, bloque:4},
+    {n:"Tartar Roll", pBloque:7900, cBloque:2680, bloque:4},
+    {n:"Niguiris de Salmón", pBloque:5300, cBloque:1813, bloque:2},
+    {n:"Nigiri Trufa", pBloque:6800, cBloque:2310, bloque:2},
+    {n:"Nigiri Langostino", pBloque:7200, cBloque:2426, bloque:2},
+    {n:"Nigiri Atún", pBloque:12500, cBloque:4247, bloque:2},
+    {n:"Nigiri Acevichado", pBloque:6000, cBloque:2049, bloque:2},
+    {n:"Nigiri Veggie", pBloque:4000, cBloque:1365, bloque:2},
+    {n:"Nigiri Huancaina", pBloque:3000, cBloque:1035, bloque:2}
   ];
 
   var state = {
@@ -690,15 +703,15 @@
     var row = document.createElement("div");
     row.className = "item-row";
     row.innerHTML =
-      '<div class="item-name"><strong>' + p.n + '</strong><small>' + money(p.p4) + ' cada 4</small></div>' +
+      '<div class="item-name"><strong>' + p.n + '</strong><small>' + money(p.pBloque) + ' cada ' + p.bloque + '</small></div>' +
       '<div class="stepper">' +
         '<button type="button" data-act="dec" aria-label="Restar ' + p.n + '">−</button>' +
         '<span class="qty" id="pq' + i + '">0</span>' +
-        '<button type="button" data-act="inc" aria-label="Sumar ' + p.n + '">+4</button>' +
+        '<button type="button" data-act="inc" aria-label="Sumar ' + p.n + '">+' + p.bloque + '</button>' +
       '</div>';
     var btns = row.querySelectorAll("button");
-    btns[0].addEventListener("click", function(){ changePieza(i, -4); });
-    btns[1].addEventListener("click", function(){ changePieza(i, 4); });
+    btns[0].addEventListener("click", function(){ changePieza(i, -p.bloque); });
+    btns[1].addEventListener("click", function(){ changePieza(i, p.bloque); });
     piezasList.appendChild(row);
   });
 
@@ -772,7 +785,7 @@
   function parseWhatsAppOrder(text){
     var lines = String(text || "").split(/\r?\n/).map(function(l){ return l.trim(); }).filter(Boolean);
     var comboRe = /^[•\-\*]\s*(\d+)\s*x\s*(.+?)\s*\(\$?\s*([\d.,]+)\s*c\/u\)\s*$/i;
-    var piezaRe = /^[•\-\*]\s*(\d+)\s*piezas?\s+de\s+(.+?)\s*\(piezas sueltas,\s*\$?\s*([\d.,]+)\s*c\/4\s*piezas\)\s*$/i;
+    var piezaRe = /^[•\-\*]\s*(\d+)\s*piezas?\s+de\s+(.+?)\s*\(piezas sueltas,\s*\$?\s*([\d.,]+)\s*c\/\d+\s*piezas\)\s*$/i;
     var totalRe = /total\s*:?\s*\$?\s*([\d.,]+)/i;
     var combos = COMBOS.map(function(){ return 0; });
     var piezas = PIEZAS.map(function(){ return 0; });
@@ -830,7 +843,7 @@
     if(res.detectedTotal != null){
       var sum = 0;
       COMBOS.forEach(function(c, i){ sum += c.p * res.combos[i]; });
-      PIEZAS.forEach(function(p, i){ sum += (p.p4 / 4) * res.piezas[i]; });
+      PIEZAS.forEach(function(p, i){ sum += (p.pBloque / p.bloque) * res.piezas[i]; });
       if(Math.abs(sum - res.detectedTotal) > 1){
         partes.push("Ojo: el total del mensaje (" + money(res.detectedTotal) + ") no coincide con lo cargado (" + money(sum) + ").");
       }
@@ -907,7 +920,7 @@
       var q = state.piezas[i];
       if(q > 0){
         any = true;
-        var sub = (p.p4 / 4) * q;
+        var sub = (p.pBloque / p.bloque) * q;
         total += sub;
         var d = document.createElement("div");
         d.className = "t-item";
@@ -1144,7 +1157,7 @@
   document.getElementById("btnImprimir").addEventListener("click", function(){
     var total = 0, costo = 0;
     COMBOS.forEach(function(c,i){ total += c.p * state.combos[i]; costo += c.c * state.combos[i]; });
-    PIEZAS.forEach(function(p,i){ total += (p.p4/4) * state.piezas[i]; costo += (p.c4/4) * state.piezas[i]; });
+    PIEZAS.forEach(function(p,i){ total += (p.pBloque/p.bloque) * state.piezas[i]; costo += (p.cBloque/p.bloque) * state.piezas[i]; });
 
     var used = getCounter() + 1;
     setCounter(used);

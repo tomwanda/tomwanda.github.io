@@ -750,11 +750,11 @@
   <h2 class="section-title">Armá tu pedido — piezas sueltas</h2>
   <div class="section-hint">Elegí solo las piezas que querés, sin atarte a un combo fijo.</div>
   <div class="steps">
-    <div class="step"><div class="num">1</div><p>Arrastrá la pieza que quieras hasta la bandeja (o sumala con el botón "+4")</p></div>
-    <div class="step"><div class="num">2</div><p>Elegí cuánto querés de cada roll — podés combinar los que quieras</p></div>
+    <div class="step"><div class="num">1</div><p>Arrastrá la pieza que quieras hasta la bandeja (o sumala con el botón "+")</p></div>
+    <div class="step"><div class="num">2</div><p>Elegí cuánto querés de cada una — podés combinar las que quieras</p></div>
     <div class="step"><div class="num">3</div><p>Confirmá todo junto desde el botón de WhatsApp</p></div>
   </div>
-  <div class="section-hint">Se eligen de a 4 piezas (medio rollo) · mínimo 8 piezas combinables entre distintos rolls</div>
+  <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 8 piezas combinables entre distintas variedades</div>
   <div class="grid" id="piezas-grid"></div>
   <div class="piezas-tray-zone" id="piezas-tray-zone">
     <h4>🍽️ Tu bandeja</h4>
@@ -866,14 +866,26 @@
   ];
 
   // ---- Piezas sueltas (armá tu pedido) ----
-  // Arrancamos con los 4 rolls más pedidos, precio confirmado por el dueño del negocio
-  // (costo real de la planilla de costos x ~200% de margen, redondeado).
-  // El resto de los rolls se puede sumar después de la misma forma.
+  // Precio confirmado por el dueño del negocio (costo real de la planilla de
+  // costos x ~200% de margen, redondeado). "bloque" = de a cuántas piezas se
+  // vende cada una (los rolls de a 4, los nigiris de a 2 por ser más caros
+  // por pieza) — "precioBloque" es el precio de ese bloque completo.
   const piezasSueltas = [
-    { nombre: "New York Phila", precio4: 7200, tag: "clasico" },
-    { nombre: "California", precio4: 5800, tag: "clasico" },
-    { nombre: "Mex Roll", precio4: 6700, tag: "premium" },
-    { nombre: "2 Salmones", precio4: 6000, tag: "premium" }
+    { nombre: "New York Phila", precioBloque: 7200, bloque: 4, tag: "clasico" },
+    { nombre: "California", precioBloque: 5800, bloque: 4, tag: "clasico" },
+    { nombre: "Mex Roll", precioBloque: 6700, bloque: 4, tag: "premium" },
+    { nombre: "2 Salmones", precioBloque: 6000, bloque: 4, tag: "premium" },
+    { nombre: "Miraflores", precioBloque: 7800, bloque: 4, tag: "premium" },
+    { nombre: "Gueishas", precioBloque: 2900, bloque: 4, tag: "premium" },
+    { nombre: "Sashimis", precioBloque: 1800, bloque: 4, tag: "premium" },
+    { nombre: "Tartar Roll", precioBloque: 7900, bloque: 4, tag: "premium" },
+    { nombre: "Niguiris de Salmón", precioBloque: 5300, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Trufa", precioBloque: 6800, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Langostino", precioBloque: 7200, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Atún", precioBloque: 12500, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Acevichado", precioBloque: 6000, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Veggie", precioBloque: 4000, bloque: 2, tag: "premium" },
+    { nombre: "Nigiri Huancaina", precioBloque: 3000, bloque: 2, tag: "premium" }
   ];
   const PIEZAS_MINIMO = 8;
   function isPiezaKey(key){ return typeof key === "string" && key.charAt(0) === "p"; }
@@ -893,7 +905,7 @@
   function itemInfo(key){
     if (isPiezaKey(key)){
       const p = piezaData(key);
-      return { item_id: key, item_name: p.nombre, item_category: "Piezas sueltas", price: p.precio4 / 4 };
+      return { item_id: key, item_name: p.nombre, item_category: "Piezas sueltas", price: p.precioBloque / p.bloque };
     }
     const c = combos[key];
     return { item_id: String(key), item_name: c.nombre, item_category: "Combo", price: parsePrice(c.precio) };
@@ -960,7 +972,7 @@
   function cartCount(){ return Object.values(cart).reduce((a,b)=>a+b,0); }
   function cartTotal(){
     return Object.entries(cart).reduce((sum,[key,q]) => {
-      if (isPiezaKey(key)) return sum + (piezaData(key).precio4 / 4) * q;
+      if (isPiezaKey(key)){ const pz = piezaData(key); return sum + (pz.precioBloque / pz.bloque) * q; }
       return sum + parsePrice(combos[key].precio) * q;
     }, 0);
   }
@@ -977,7 +989,7 @@
     const lineas = Object.entries(cart).map(([key,q]) => {
       if (isPiezaKey(key)){
         const p = piezaData(key);
-        return `• ${q} piezas de ${p.nombre} (piezas sueltas, ${formatARS(p.precio4)} c/4 piezas)`;
+        return `• ${q} piezas de ${p.nombre} (piezas sueltas, ${formatARS(p.precioBloque)} c/${p.bloque} piezas)`;
       }
       const c = combos[key];
       return `• ${q}x ${c.nombre} (${c.precio} c/u)`;
@@ -1085,7 +1097,7 @@
       cartItemsEl.innerHTML = entries.map(([key,q]) => {
         if (isPiezaKey(key)){
           const p = piezaData(key);
-          const sub = (p.precio4 / 4) * q;
+          const sub = (p.precioBloque / p.bloque) * q;
           return `
             <div class="cart-item">
               <div class="cart-item-info">
@@ -1118,7 +1130,7 @@
       }).join("");
       cartItemsEl.querySelectorAll(".cart-item").forEach((row, i) => {
         const key = entries[i][0];
-        const delta = isPiezaKey(key) ? 4 : 1;
+        const delta = isPiezaKey(key) ? piezaData(key).bloque : 1;
         row.querySelector(".qty-minus").addEventListener("click", () => { changeQty(key, -delta); renderPiezasTray(); });
         row.querySelector(".qty-plus").addEventListener("click", () => { changeQty(key, delta); renderPiezasTray(); });
       });
@@ -1130,7 +1142,7 @@
     if (pc > 0 && pc < PIEZAS_MINIMO){
       confirmBtn.disabled = true;
       piezasWarnCart.style.display = "block";
-      piezasWarnCart.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas sueltas para llegar al mínimo de ${PIEZAS_MINIMO} (se eligen de a 4).`;
+      piezasWarnCart.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas sueltas para llegar al mínimo de ${PIEZAS_MINIMO}.`;
     } else {
       confirmBtn.disabled = false;
       piezasWarnCart.style.display = "none";
@@ -1213,7 +1225,7 @@
     } else {
       piezasTray.innerHTML = entries.map(([key,q]) => {
         const p = piezaData(key);
-        const sub = (p.precio4 / 4) * q;
+        const sub = (p.precioBloque / p.bloque) * q;
         return `
           <div class="cart-item">
             <div class="cart-item-info">
@@ -1228,15 +1240,15 @@
           </div>
         `;
       }).join("");
-      piezasTray.querySelectorAll(".tray-minus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, -4); renderPiezasTray(); }));
-      piezasTray.querySelectorAll(".tray-plus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, 4); renderPiezasTray(); }));
+      piezasTray.querySelectorAll(".tray-minus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, -piezaData(b.dataset.key).bloque); renderPiezasTray(); }));
+      piezasTray.querySelectorAll(".tray-plus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, piezaData(b.dataset.key).bloque); renderPiezasTray(); }));
     }
     const pc = piezasCount();
-    const subtotal = entries.reduce((sum,[key,q]) => sum + (piezaData(key).precio4 / 4) * q, 0);
+    const subtotal = entries.reduce((sum,[key,q]) => { const pz = piezaData(key); return sum + (pz.precioBloque / pz.bloque) * q; }, 0);
     piezasTotalEl.textContent = formatARS(subtotal);
     if (pc > 0 && pc < PIEZAS_MINIMO){
       piezasWarnEl.style.display = "block";
-      piezasWarnEl.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se eligen de a 4, se pueden combinar rolls distintos).`;
+      piezasWarnEl.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se pueden combinar piezas distintas).`;
     } else {
       piezasWarnEl.style.display = "none";
     }
@@ -1266,7 +1278,7 @@
       function up(ev){
         const target = document.elementFromPoint(ev.clientX, ev.clientY);
         if (target && target.closest("#piezas-tray-zone")){
-          changeQty(key, 4);
+          changeQty(key, piezaData(key).bloque);
           renderPiezasTray();
         }
         ghost.remove();
@@ -1294,16 +1306,16 @@
       <div class="body">
         <h3>${p.nombre}</h3>
         <div class="pieces">${ROLL_INFO[p.nombre] || ""}</div>
-        <div class="price">${formatARS(p.precio4)} c/4 piezas</div>
+        <div class="price">${formatARS(p.precioBloque)} c/${p.bloque} piezas</div>
         <div class="qty-stepper">
-          <button type="button" class="qty-btn piece-minus" aria-label="Quitar 4">−4</button>
+          <button type="button" class="qty-btn piece-minus" aria-label="Quitar ${p.bloque}">−${p.bloque}</button>
           <span class="qty-val" data-qty-idx="${key}">${cart[key] || 0}</span>
-          <button type="button" class="qty-btn piece-plus" aria-label="Agregar 4">+4</button>
+          <button type="button" class="qty-btn piece-plus" aria-label="Agregar ${p.bloque}">+${p.bloque}</button>
         </div>
       </div>
     `;
-    card.querySelector(".piece-minus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, -4); renderPiezasTray(); });
-    card.querySelector(".piece-plus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, 4, card.querySelector(".photo")); renderPiezasTray(); });
+    card.querySelector(".piece-minus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, -p.bloque); renderPiezasTray(); });
+    card.querySelector(".piece-plus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, p.bloque, card.querySelector(".photo")); renderPiezasTray(); });
     setupPieceDrag(card.querySelector(".photo"), card, key);
     piezasGrid.appendChild(card);
     revealObserver.observe(card);
