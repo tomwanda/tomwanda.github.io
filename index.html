@@ -754,7 +754,7 @@
     <div class="step"><div class="num">2</div><p>Elegí cuánto querés de cada una — podés combinar las que quieras</p></div>
     <div class="step"><div class="num">3</div><p>Confirmá todo junto desde el botón de WhatsApp</p></div>
   </div>
-  <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 8 piezas combinables entre distintas variedades</div>
+  <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 12 piezas combinables entre distintas variedades</div>
   <div class="grid" id="piezas-grid"></div>
   <div class="piezas-tray-zone" id="piezas-tray-zone">
     <h4>🍽️ Tu bandeja</h4>
@@ -887,7 +887,7 @@
     { nombre: "Nigiri Veggie", precioBloque: 4000, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Huancaina", precioBloque: 3000, bloque: 2, tag: "premium" }
   ];
-  const PIEZAS_MINIMO = 8;
+  const PIEZAS_MINIMO = 12;
   function isPiezaKey(key){ return typeof key === "string" && key.charAt(0) === "p"; }
   function piezaData(key){ return piezasSueltas[parseInt(key.slice(1), 10)]; }
 

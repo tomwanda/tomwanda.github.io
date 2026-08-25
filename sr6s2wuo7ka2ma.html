@@ -937,8 +937,8 @@
 
     var totalPiezasSueltas = state.piezas.reduce(function(a,b){return a+b;}, 0);
     var note = document.getElementById("piezasNote");
-    if(totalPiezasSueltas > 0 && totalPiezasSueltas < 8){
-      note.textContent = "Mínimo habitual: 8 piezas sueltas combinadas (llevás " + totalPiezasSueltas + ").";
+    if(totalPiezasSueltas > 0 && totalPiezasSueltas < 12){
+      note.textContent = "Mínimo habitual: 12 piezas sueltas combinadas (llevás " + totalPiezasSueltas + ").";
       note.className = "piezas-note warn";
     }else{
       note.textContent = "";
