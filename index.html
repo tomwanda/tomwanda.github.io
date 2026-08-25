@@ -727,7 +727,7 @@
     <div class="step"><div class="num">2</div><p>Elegí cuánto querés de cada una — podés combinar las que quieras</p></div>
     <div class="step"><div class="num">3</div><p>Confirmá todo junto desde el botón de WhatsApp</p></div>
   </div>
-  <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 12 piezas combinables entre distintas variedades</div>
+  <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 12 piezas combinables entre distintas variedades si pedís solo piezas sueltas (si sumás algún combo, no aplica mínimo)</div>
   <div class="grid" id="piezas-grid"></div>
   <div class="piezas-mini-note" id="piezas-mini-note"></div>
 </div>
@@ -953,6 +953,9 @@
   function piezasCount(){
     return Object.entries(cart).filter(([k,q]) => isPiezaKey(k) && q > 0).reduce((a,[,q])=>a+q,0);
   }
+  function hasCombosInCart(){
+    return Object.entries(cart).some(([k,q]) => !isPiezaKey(k) && q > 0);
+  }
   function updateFabBadge(){
     const count = cartCount();
     const fab = document.getElementById("cart-fab");
@@ -966,9 +969,9 @@
     const note = document.getElementById("piezas-mini-note");
     if (!note) return;
     const pc = piezasCount();
-    if (pc > 0 && pc < PIEZAS_MINIMO){
+    if (pc > 0 && pc < PIEZAS_MINIMO && !hasCombosInCart()){
       note.style.display = "block";
-      note.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se pueden combinar piezas distintas).`;
+      note.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se pueden combinar piezas distintas). Si sumás algún combo, este mínimo no aplica.`;
     } else {
       note.style.display = "none";
     }
@@ -1143,7 +1146,7 @@
       envioNote.style.display = "none";
     }
     const pc = piezasCount();
-    if (pc > 0 && pc < PIEZAS_MINIMO){
+    if (pc > 0 && pc < PIEZAS_MINIMO && !hasCombosInCart()){
       confirmBtn.disabled = true;
       piezasWarnCart.style.display = "block";
       piezasWarnCart.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas sueltas para llegar al mínimo de ${PIEZAS_MINIMO}.`;
@@ -1173,7 +1176,7 @@
   document.getElementById("cart-confirm").addEventListener("click", () => {
     if (cartCount() === 0) return;
     const pc = piezasCount();
-    if (pc > 0 && pc < PIEZAS_MINIMO) return;
+    if (pc > 0 && pc < PIEZAS_MINIMO && !hasCombosInCart()) return;
     gaEvent("generate_lead", {
       currency: "ARS",
       value: cartTotal(),
