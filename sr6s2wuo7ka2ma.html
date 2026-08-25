@@ -787,10 +787,12 @@
     var comboRe = /^[•\-\*]\s*(\d+)\s*x\s*(.+?)\s*\(\$?\s*([\d.,]+)\s*c\/u\)\s*$/i;
     var piezaRe = /^[•\-\*]\s*(\d+)\s*piezas?\s+de\s+(.+?)\s*\(piezas sueltas,\s*\$?\s*([\d.,]+)\s*c\/\d+\s*piezas\)\s*$/i;
     var totalRe = /total\s*:?\s*\$?\s*([\d.,]+)/i;
+    var envioRe = /^env[ií]o\s*:\s*(.+)$/i;
     var combos = COMBOS.map(function(){ return 0; });
     var piezas = PIEZAS.map(function(){ return 0; });
     var unmatched = [];
     var detectedTotal = null;
+    var envio = null;
     lines.forEach(function(line){
       var m = line.match(comboRe);
       if(m){
@@ -806,12 +808,14 @@
         else unmatched.push(line);
         return;
       }
+      m = line.match(envioRe);
+      if(m){ envio = m[1].trim(); return; }
       if(/total/i.test(line)){
         var mt = line.match(totalRe);
         if(mt) detectedTotal = parseMoneyAR(mt[1]);
       }
     });
-    return { combos: combos, piezas: piezas, unmatched: unmatched, detectedTotal: detectedTotal };
+    return { combos: combos, piezas: piezas, unmatched: unmatched, detectedTotal: detectedTotal, envio: envio };
   }
   function setPegadoStatus(msg, warn){
     var el = document.getElementById("pegadoStatus");
@@ -837,6 +841,10 @@
 
     var partes = [];
     if(cargados > 0) partes.push("Se cargaron " + cargados + " producto(s) del pedido.");
+    if(res.envio){
+      var envioLower = res.envio.toLowerCase();
+      partes.push(envioLower.indexOf("gratis") > -1 ? "🛵 Envío gratis." : "🛵 Envío a cobrar aparte (" + res.envio + ").");
+    }
     if(res.unmatched.length){
       partes.push("No reconocí " + res.unmatched.length + " línea(s) — cargalas a mano: " + res.unmatched.join(" / "));
     }

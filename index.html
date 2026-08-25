@@ -641,6 +641,13 @@
     background:#fff3e0; color:var(--accent-dark); border:1px solid var(--gold);
     border-radius:10px; padding:8px 10px; font-size:0.76rem; margin-bottom:12px;
   }
+  .cart-envio-note{
+    border-radius:10px; padding:8px 10px; font-size:0.76rem; margin-bottom:12px;
+    background:#fff3e0; color:var(--accent-dark); border:1px solid var(--gold);
+  }
+  .cart-envio-note.achieved{
+    background:#eaf3e6; color:var(--olive); border:1px solid var(--olive-light);
+  }
 
   /* ---- Piezas sueltas: armá tu pedido ---- */
   .piece-card{position:relative;}
@@ -675,6 +682,17 @@
   }
   .piezas-tray-zone.drag-over{border-color:var(--accent); background:#fbe9de;}
   .piezas-tray-zone h4{margin:0 0 10px; font-size:0.95rem; color:var(--text);}
+  /* Mientras la sección de piezas sueltas está en pantalla, la bandeja queda
+     flotando fija abajo — así el drag-and-drop nunca requiere arrastrar
+     fuera de lo visible, sin importar cuántas piezas haya en la grilla. */
+  .piezas-tray-zone.pinned{
+    /* bottom despeja los botones flotantes de Instagram/WhatsApp (ocupan
+       hasta ~134px desde abajo, a la derecha) para que no se superpongan. */
+    position:fixed; left:50%; bottom:144px; transform:translateX(-50%);
+    width:min(92vw, 520px); max-height:34vh; overflow-y:auto;
+    z-index:50; box-shadow:0 10px 26px rgba(44,36,24,0.28);
+    margin-top:0;
+  }
   .piezas-total-row{
     display:flex; justify-content:space-between; align-items:center;
     border-top:1px dashed var(--border); padding-top:10px; margin-top:6px;
@@ -723,7 +741,7 @@
   <div class="step"><div class="num">3</div><p>Coordinamos fecha, horario y forma de entrega</p></div>
 </div>
 
-            <div class="occasions">Zona de entrega: San Isidro, Beccar, Martinez y Victoria (Zona Norte)</div>
+            <div class="occasions">Zona de entrega: San Isidro, Beccar, Martinez y Victoria (Zona Norte) · Envío gratis en pedidos desde $15.000</div>
 
 <div class="gallery-section">
   <h2 class="section-title">Nuestras creaciones</h2>
@@ -763,6 +781,7 @@
     <div class="piezas-warn" id="piezas-warn"></div>
     <div class="piezas-note">Estas piezas se suman a tu pedido general — confirmás todo junto con el botón de WhatsApp de abajo.</div>
   </div>
+  <div id="piezas-tray-spacer" style="height:0px;"></div>
 </div>
 
 <div class="note">
@@ -803,6 +822,7 @@
       <h3>Tu pedido 🛒</h3>
       <div class="cart-items" id="cart-items"></div>
       <div class="cart-total-row"><span>Total</span><span class="cart-total-val" id="cart-total-val"></span></div>
+      <div class="cart-envio-note" id="cart-envio-note" style="display:none;"></div>
       <div class="cart-piezas-warn" id="cart-piezas-warn" style="display:none;"></div>
       <button type="button" class="btn-confirm-wa" id="cart-confirm">Confirmar pedido por WhatsApp</button>
       <button type="button" class="cart-clear" id="cart-clear">Vaciar pedido</button>
@@ -888,6 +908,10 @@
     { nombre: "Nigiri Huancaina", precioBloque: 3000, bloque: 2, tag: "premium" }
   ];
   const PIEZAS_MINIMO = 12;
+  // Envío gratis a partir de este monto (Rapiboy cobra $3.069-$5.469 por envío
+  // según distancia — este piso asegura que el envío gratis no coma margen,
+  // incluso en el peor caso de un pedido chico de piezas sueltas).
+  const ENVIO_GRATIS_MINIMO = 15000;
   function isPiezaKey(key){ return typeof key === "string" && key.charAt(0) === "p"; }
   function piezaData(key){ return piezasSueltas[parseInt(key.slice(1), 10)]; }
 
@@ -994,7 +1018,9 @@
       const c = combos[key];
       return `• ${q}x ${c.nombre} (${c.precio} c/u)`;
     });
-    const msg = `Hola! Quiero hacer este pedido:\n\n${lineas.join("\n")}\n\nTotal: ${formatARS(cartTotal())}\n\n¿Coordinamos día y horario? 🍣`;
+    const total = cartTotal();
+    const envioLinea = total >= ENVIO_GRATIS_MINIMO ? "Envío: gratis 🛵" : "Envío: a coordinar aparte según zona";
+    const msg = `Hola! Quiero hacer este pedido:\n\n${lineas.join("\n")}\n\n${envioLinea}\nTotal: ${formatARS(total)}\n\n¿Coordinamos día y horario? 🍣`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -1135,9 +1161,23 @@
         row.querySelector(".qty-plus").addEventListener("click", () => { changeQty(key, delta); renderPiezasTray(); });
       });
     }
-    cartTotalEl.textContent = formatARS(cartTotal());
+    const total = cartTotal();
+    cartTotalEl.textContent = formatARS(total);
     const confirmBtn = document.getElementById("cart-confirm");
     const piezasWarnCart = document.getElementById("cart-piezas-warn");
+    const envioNote = document.getElementById("cart-envio-note");
+    if (total > 0){
+      envioNote.style.display = "block";
+      if (total >= ENVIO_GRATIS_MINIMO){
+        envioNote.className = "cart-envio-note achieved";
+        envioNote.textContent = "🛵 ¡Envío gratis en tu zona!";
+      } else {
+        envioNote.className = "cart-envio-note";
+        envioNote.textContent = `Te faltan ${formatARS(ENVIO_GRATIS_MINIMO - total)} para el envío gratis (por debajo de ${formatARS(ENVIO_GRATIS_MINIMO)} el envío se coordina aparte, según zona).`;
+      }
+    } else {
+      envioNote.style.display = "none";
+    }
     const pc = piezasCount();
     if (pc > 0 && pc < PIEZAS_MINIMO){
       confirmBtn.disabled = true;
@@ -1215,8 +1255,26 @@
   const piezasGrid = document.getElementById("piezas-grid");
   const piezasTray = document.getElementById("piezas-tray");
   const piezasTrayZone = document.getElementById("piezas-tray-zone");
+  const piezasTraySpacer = document.getElementById("piezas-tray-spacer");
   const piezasTotalEl = document.getElementById("piezas-total");
   const piezasWarnEl = document.getElementById("piezas-warn");
+
+  // Mientras la grilla de piezas sueltas está en pantalla, la bandeja se
+  // "flota" fija abajo (position:fixed) para que siempre sea un destino de
+  // drag alcanzable, sin importar cuántas piezas haya ni cuánto haya que
+  // scrollear. Un spacer del mismo alto evita que el resto de la página salte.
+  const pinObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        piezasTraySpacer.style.height = piezasTrayZone.offsetHeight + "px";
+        piezasTrayZone.classList.add("pinned");
+      } else {
+        piezasTrayZone.classList.remove("pinned");
+        piezasTraySpacer.style.height = "0px";
+      }
+    });
+  }, { threshold: 0 });
+  pinObserver.observe(piezasGrid);
 
   function renderPiezasTray(){
     const entries = Object.entries(cart).filter(([k,q]) => isPiezaKey(k) && q > 0);
