@@ -489,26 +489,6 @@
     pointer-events:none;
     z-index:90;
   }
-  .fab-wa{
-    position:absolute;
-    bottom:22px; right:22px;
-    width:56px; height:56px;
-    pointer-events:auto;
-    border-radius:50%;
-    background:#25D366;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 8px 20px rgba(37,211,102,0.45), 0 2px 6px rgba(0,0,0,0.15);
-    text-decoration:none;
-    z-index:90;
-    animation:fab-pulse 2.6s ease-in-out infinite;
-    transition:transform .15s ease;
-  }
-  .fab-wa:hover{transform:scale(1.08); animation-play-state:paused;}
-  .fab-wa svg{width:28px; height:28px;}
-  @keyframes fab-pulse{
-    0%, 100%{ box-shadow:0 8px 20px rgba(37,211,102,0.45), 0 0 0 0 rgba(37,211,102,0.35); }
-    50%{ box-shadow:0 8px 20px rgba(37,211,102,0.45), 0 0 0 10px rgba(37,211,102,0); }
-  }
   .fab-ig{
     position:absolute;
     bottom:88px; right:22px;
@@ -524,21 +504,6 @@
   }
   .fab-ig:hover{transform:scale(1.08);}
   .fab-ig svg{width:22px; height:22px;}
-  .fab-badge{
-    position:absolute;
-    top:-4px; right:-4px;
-    min-width:20px; height:20px;
-    padding:0 5px;
-    border-radius:10px;
-    background:var(--accent);
-    color:#fff;
-    font-size:0.68rem;
-    font-weight:700;
-    display:none;
-    align-items:center; justify-content:center;
-    box-shadow:0 2px 6px rgba(0,0,0,0.25);
-    border:2px solid var(--frame-bg);
-  }
 
   /* Stepper de cantidad (carrito) */
   .qty-stepper{
@@ -651,11 +616,9 @@
 
   /* ---- Piezas sueltas: armá tu pedido ---- */
   .piece-card{position:relative;}
-  .piece-card .photo{cursor:grab; touch-action:none; user-select:none;}
-  .piece-card .photo:active{cursor:grabbing;}
-  .piece-card .drag-hint{
-    position:absolute; top:8px; right:8px; font-size:0.65rem; color:#fff;
-    background:rgba(0,0,0,0.35); padding:2px 7px; border-radius:20px; letter-spacing:.02em;
+  .piezas-mini-note{
+    display:none; margin-top:14px; background:#fff3e0; color:var(--accent-dark);
+    border:1px solid var(--gold); border-radius:10px; padding:8px 10px; font-size:0.76rem;
   }
   .quick-nav{display:flex; gap:10px; padding:2px 20px 20px;}
   .quick-nav-btn{
@@ -671,38 +634,30 @@
   .quick-nav-btn:hover{transform:translateY(-2px); box-shadow:0 7px 18px rgba(0,0,0,0.28);}
   .quick-nav-btn:active{transform:translateY(0); box-shadow:0 2px 6px rgba(0,0,0,0.28);}
   .combos-panel{scroll-margin-top:14px;}
-  .piece-ghost{
-    position:fixed; pointer-events:none; z-index:9999; opacity:0.9;
-    box-shadow:0 10px 24px rgba(0,0,0,0.25); border-radius:14px;
+
+  /* ---- Carrito flotante (reemplaza al FAB fijo de WhatsApp): aparece
+     recién cuando hay algo en el pedido, sigue al cliente por toda la
+     página y abre el resumen de siempre al tocarlo. ---- */
+  .cart-fab{
+    position:absolute; bottom:22px; right:22px; z-index:90;
+    pointer-events:auto;
+    display:none; align-items:center; gap:8px;
+    background:var(--accent); color:#fff; border:none; text-decoration:none;
+    padding:11px 16px 11px 12px; border-radius:999px; cursor:pointer;
+    box-shadow:0 8px 20px rgba(193,80,46,0.4), 0 2px 6px rgba(0,0,0,0.15);
+    font-family:inherit; font-weight:800; font-size:0.82rem; letter-spacing:.01em;
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .piece-card.dragging-source{opacity:0.45;}
-  .piezas-tray-zone{
-    background:var(--frame-bg); border:2px dashed var(--border); border-radius:16px;
-    padding:16px 18px; margin-top:14px; transition:border-color .15s ease, background .15s ease;
+  .cart-fab.visible{display:inline-flex;}
+  .cart-fab:hover{transform:scale(1.05);}
+  .cart-fab:active{transform:scale(0.97);}
+  .cart-fab svg{width:21px; height:21px; flex-shrink:0;}
+  .cart-fab-count{
+    background:#fff; color:var(--accent-dark); border-radius:999px;
+    min-width:19px; height:19px; padding:0 5px;
+    display:flex; align-items:center; justify-content:center; font-size:0.72rem;
   }
-  .piezas-tray-zone.drag-over{border-color:var(--accent); background:#fbe9de;}
-  .piezas-tray-zone h4{margin:0 0 10px; font-size:0.95rem; color:var(--text);}
-  /* Mientras la sección de piezas sueltas está en pantalla, la bandeja queda
-     flotando fija abajo — así el drag-and-drop nunca requiere arrastrar
-     fuera de lo visible, sin importar cuántas piezas haya en la grilla. */
-  .piezas-tray-zone.pinned{
-    /* bottom despeja los botones flotantes de Instagram/WhatsApp (ocupan
-       hasta ~134px desde abajo, a la derecha) para que no se superpongan. */
-    position:fixed; left:50%; bottom:144px; transform:translateX(-50%);
-    width:min(92vw, 520px); max-height:34vh; overflow-y:auto;
-    z-index:50; box-shadow:0 10px 26px rgba(44,36,24,0.28);
-    margin-top:0;
-  }
-  .piezas-total-row{
-    display:flex; justify-content:space-between; align-items:center;
-    border-top:1px dashed var(--border); padding-top:10px; margin-top:6px;
-    font-weight:700; color:var(--text); font-size:0.88rem;
-  }
-  .piezas-warn{
-    display:none; margin-top:10px; background:#fff3e0; color:var(--accent-dark);
-    border:1px solid var(--gold); border-radius:10px; padding:8px 10px; font-size:0.76rem;
-  }
-  .piezas-note{font-size:0.76rem; color:var(--text-dim); margin-top:6px;}
+  .cart-fab-total{font-size:0.82rem;}
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4RTPWPW9E3"></script>
@@ -768,20 +723,13 @@
   <h2 class="section-title">Armá tu pedido — piezas sueltas</h2>
   <div class="section-hint">Elegí solo las piezas que querés, sin atarte a un combo fijo.</div>
   <div class="steps">
-    <div class="step"><div class="num">1</div><p>Arrastrá la pieza que quieras hasta la bandeja (o sumala con el botón "+")</p></div>
+    <div class="step"><div class="num">1</div><p>Sumá las piezas que quieras con el botón "+" de cada tarjeta</p></div>
     <div class="step"><div class="num">2</div><p>Elegí cuánto querés de cada una — podés combinar las que quieras</p></div>
     <div class="step"><div class="num">3</div><p>Confirmá todo junto desde el botón de WhatsApp</p></div>
   </div>
   <div class="section-hint">Los rolls se eligen de a 4 piezas y los nigiris de a 2 · mínimo 12 piezas combinables entre distintas variedades</div>
   <div class="grid" id="piezas-grid"></div>
-  <div class="piezas-tray-zone" id="piezas-tray-zone">
-    <h4>🍽️ Tu bandeja</h4>
-    <div id="piezas-tray"></div>
-    <div class="piezas-total-row"><span>Subtotal piezas sueltas</span><span id="piezas-total">$0</span></div>
-    <div class="piezas-warn" id="piezas-warn"></div>
-    <div class="piezas-note">Estas piezas se suman a tu pedido general — confirmás todo junto con el botón de WhatsApp de abajo.</div>
-  </div>
-  <div id="piezas-tray-spacer" style="height:0px;"></div>
+  <div class="piezas-mini-note" id="piezas-mini-note"></div>
 </div>
 
 <div class="note">
@@ -834,10 +782,11 @@
   <a class="fab-ig" href="https://instagram.com/tomwanda.sushi" target="_blank" rel="noopener" aria-label="Seguinos en Instagram">
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
   </a>
-  <a class="fab-wa" id="fab-wa" href="#" target="_blank" rel="noopener" aria-label="Pedir por WhatsApp">
-    <span class="fab-badge" id="fab-badge">0</span>
-    <svg viewBox="0 0 32 32" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M16.001 2.667c-7.363 0-13.334 5.97-13.334 13.333 0 2.353.615 4.646 1.78 6.666L2.667 29.333l6.815-1.788a13.27 13.27 0 0 0 6.519 1.72h.006c7.362 0 13.333-5.97 13.333-13.333 0-3.56-1.387-6.907-3.905-9.425a13.24 13.24 0 0 0-9.434-3.84Zm0 24.4h-.005a11.06 11.06 0 0 1-5.635-1.542l-.404-.24-4.045 1.061 1.08-3.944-.263-.405a11.03 11.03 0 0 1-1.69-5.897c0-6.107 4.97-11.077 11.077-11.077 2.959 0 5.74 1.153 7.833 3.248a11 11 0 0 1 3.242 7.834c0 6.107-4.97 11.077-11.19 10.962Zm6.075-8.294c-.333-.167-1.966-.97-2.27-1.08-.305-.111-.527-.167-.75.167-.222.333-.86 1.08-1.055 1.302-.194.223-.388.25-.72.084-.334-.167-1.409-.519-2.684-1.655-.992-.885-1.663-1.979-1.858-2.312-.194-.334-.02-.514.147-.68.15-.15.334-.39.5-.585.168-.194.223-.334.334-.556.111-.223.056-.417-.028-.584-.083-.167-.75-1.806-1.028-2.474-.27-.65-.545-.562-.75-.572-.194-.01-.417-.012-.64-.012-.222 0-.583.083-.888.417-.305.333-1.166 1.14-1.166 2.778s1.194 3.222 1.36 3.445c.167.223 2.35 3.587 5.694 5.031.796.344 1.417.55 1.901.703.799.254 1.526.218 2.101.132.641-.096 1.966-.804 2.243-1.581.278-.777.278-1.443.194-1.581-.083-.14-.305-.223-.638-.39Z"/></svg>
-  </a>
+  <button type="button" class="cart-fab" id="cart-fab" aria-label="Ver tu pedido">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+    <span class="cart-fab-count" id="cart-fab-count">0</span>
+    <span class="cart-fab-total" id="cart-fab-total"></span>
+  </button>
 </div>
 
 <script>
@@ -952,7 +901,7 @@
   }
 
   function flyToCart(sourceEl){
-    const fab = document.getElementById("fab-wa");
+    const fab = document.getElementById("cart-fab");
     if (!fab || !sourceEl) return;
     const startRect = sourceEl.getBoundingClientRect();
     const endRect = fab.getBoundingClientRect();
@@ -976,6 +925,7 @@
     if (nueva === 0) delete cart[idx]; else cart[idx] = nueva;
     refreshQtyDisplays();
     updateFabBadge();
+    updatePiezasNote();
     if (cartOverlay.classList.contains("open")) renderCartModal();
     if (delta > 0){
       document.querySelectorAll(`.qty-val[data-qty-idx="${idx}"]`).forEach(bump);
@@ -1005,9 +955,23 @@
   }
   function updateFabBadge(){
     const count = cartCount();
-    const badge = document.getElementById("fab-badge");
-    if (count > 0){ badge.textContent = count; badge.style.display = "flex"; }
-    else { badge.style.display = "none"; }
+    const fab = document.getElementById("cart-fab");
+    const countEl = document.getElementById("cart-fab-count");
+    const totalEl = document.getElementById("cart-fab-total");
+    countEl.textContent = count;
+    totalEl.textContent = formatARS(cartTotal());
+    fab.classList.toggle("visible", count > 0);
+  }
+  function updatePiezasNote(){
+    const note = document.getElementById("piezas-mini-note");
+    if (!note) return;
+    const pc = piezasCount();
+    if (pc > 0 && pc < PIEZAS_MINIMO){
+      note.style.display = "block";
+      note.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se pueden combinar piezas distintas).`;
+    } else {
+      note.style.display = "none";
+    }
   }
   function cartWaLink(){
     const lineas = Object.entries(cart).map(([key,q]) => {
@@ -1157,8 +1121,8 @@
       cartItemsEl.querySelectorAll(".cart-item").forEach((row, i) => {
         const key = entries[i][0];
         const delta = isPiezaKey(key) ? piezaData(key).bloque : 1;
-        row.querySelector(".qty-minus").addEventListener("click", () => { changeQty(key, -delta); renderPiezasTray(); });
-        row.querySelector(".qty-plus").addEventListener("click", () => { changeQty(key, delta); renderPiezasTray(); });
+        row.querySelector(".qty-minus").addEventListener("click", () => changeQty(key, -delta));
+        row.querySelector(".qty-plus").addEventListener("click", () => changeQty(key, delta));
       });
     }
     const total = cartTotal();
@@ -1203,8 +1167,8 @@
     Object.keys(cart).forEach(k => delete cart[k]);
     refreshQtyDisplays();
     updateFabBadge();
+    updatePiezasNote();
     renderCartModal();
-    renderPiezasTray();
   });
   document.getElementById("cart-confirm").addEventListener("click", () => {
     if (cartCount() === 0) return;
@@ -1222,7 +1186,7 @@
     Object.keys(cart).forEach(k => delete cart[k]);
     refreshQtyDisplays();
     updateFabBadge();
-    renderPiezasTray();
+    updatePiezasNote();
     closeCartModal();
   });
 
@@ -1239,116 +1203,13 @@
   window.addEventListener("scroll", () => requestAnimationFrame(updateHeroParallax), { passive: true });
   updateHeroParallax();
 
-  // ---- FAB de WhatsApp: si hay carrito, confirma el pedido completo; si no, mensaje genérico ----
-  document.getElementById("fab-wa").addEventListener("click", e => {
-    e.preventDefault();
-    if (cartCount() > 0){
-      openCartModal();
-    } else {
-      gaEvent("contact_whatsapp", { source: "fab_generico" });
-      const fabMsg = encodeURIComponent("Hola! Quiero hacer un pedido para un evento 🍣");
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${fabMsg}`, "_blank", "noopener");
-    }
+  // ---- Carrito flotante: abre siempre el resumen del pedido ----
+  document.getElementById("cart-fab").addEventListener("click", () => {
+    openCartModal();
   });
 
-  // ---- Piezas sueltas: tarjetas, bandeja y drag-and-drop (mouse + touch vía Pointer Events) ----
+  // ---- Piezas sueltas: tarjetas ----
   const piezasGrid = document.getElementById("piezas-grid");
-  const piezasTray = document.getElementById("piezas-tray");
-  const piezasTrayZone = document.getElementById("piezas-tray-zone");
-  const piezasTraySpacer = document.getElementById("piezas-tray-spacer");
-  const piezasTotalEl = document.getElementById("piezas-total");
-  const piezasWarnEl = document.getElementById("piezas-warn");
-
-  // Mientras la grilla de piezas sueltas está en pantalla, la bandeja se
-  // "flota" fija abajo (position:fixed) para que siempre sea un destino de
-  // drag alcanzable, sin importar cuántas piezas haya ni cuánto haya que
-  // scrollear. Un spacer del mismo alto evita que el resto de la página salte.
-  const pinObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting){
-        piezasTraySpacer.style.height = piezasTrayZone.offsetHeight + "px";
-        piezasTrayZone.classList.add("pinned");
-      } else {
-        piezasTrayZone.classList.remove("pinned");
-        piezasTraySpacer.style.height = "0px";
-      }
-    });
-  }, { threshold: 0 });
-  pinObserver.observe(piezasGrid);
-
-  function renderPiezasTray(){
-    const entries = Object.entries(cart).filter(([k,q]) => isPiezaKey(k) && q > 0);
-    if (entries.length === 0){
-      piezasTray.innerHTML = `<div class="cart-empty">Arrastrá una pieza acá arriba, o usá el "+4" de cada tarjeta.</div>`;
-    } else {
-      piezasTray.innerHTML = entries.map(([key,q]) => {
-        const p = piezaData(key);
-        const sub = (p.precioBloque / p.bloque) * q;
-        return `
-          <div class="cart-item">
-            <div class="cart-item-info">
-              <div class="cart-item-name">${p.nombre}</div>
-              <div class="cart-item-sub">${q} piezas · ${formatARS(sub)}</div>
-            </div>
-            <div class="qty-stepper">
-              <button type="button" class="qty-btn tray-minus" data-key="${key}" aria-label="Quitar">−</button>
-              <span class="qty-val" data-qty-idx="${key}">${q}</span>
-              <button type="button" class="qty-btn tray-plus" data-key="${key}" aria-label="Agregar">+</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-      piezasTray.querySelectorAll(".tray-minus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, -piezaData(b.dataset.key).bloque); renderPiezasTray(); }));
-      piezasTray.querySelectorAll(".tray-plus").forEach(b => b.addEventListener("click", () => { changeQty(b.dataset.key, piezaData(b.dataset.key).bloque); renderPiezasTray(); }));
-    }
-    const pc = piezasCount();
-    const subtotal = entries.reduce((sum,[key,q]) => { const pz = piezaData(key); return sum + (pz.precioBloque / pz.bloque) * q; }, 0);
-    piezasTotalEl.textContent = formatARS(subtotal);
-    if (pc > 0 && pc < PIEZAS_MINIMO){
-      piezasWarnEl.style.display = "block";
-      piezasWarnEl.textContent = `Te faltan ${PIEZAS_MINIMO - pc} piezas para llegar al mínimo de ${PIEZAS_MINIMO} (se pueden combinar piezas distintas).`;
-    } else {
-      piezasWarnEl.style.display = "none";
-    }
-  }
-
-  function setupPieceDrag(handle, card, key){
-    handle.addEventListener("pointerdown", e => {
-      if (e.pointerType === "mouse" && e.button !== 0) return;
-      e.preventDefault();
-      const rect = card.getBoundingClientRect();
-      const ghost = card.cloneNode(true);
-      ghost.className = "card piece-ghost";
-      ghost.style.width = rect.width + "px";
-      ghost.style.left = rect.left + "px";
-      ghost.style.top = rect.top + "px";
-      document.body.appendChild(ghost);
-      card.classList.add("dragging-source");
-      const offsetX = e.clientX - rect.left;
-      const offsetY = e.clientY - rect.top;
-
-      function move(ev){
-        ghost.style.left = (ev.clientX - offsetX) + "px";
-        ghost.style.top = (ev.clientY - offsetY) + "px";
-        const target = document.elementFromPoint(ev.clientX, ev.clientY);
-        piezasTrayZone.classList.toggle("drag-over", !!(target && target.closest("#piezas-tray-zone")));
-      }
-      function up(ev){
-        const target = document.elementFromPoint(ev.clientX, ev.clientY);
-        if (target && target.closest("#piezas-tray-zone")){
-          changeQty(key, piezaData(key).bloque);
-          renderPiezasTray();
-        }
-        ghost.remove();
-        card.classList.remove("dragging-source");
-        piezasTrayZone.classList.remove("drag-over");
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
-      }
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", up, { once: true });
-    });
-  }
 
   piezasSueltas.forEach((p, i) => {
     const key = "p" + i;
@@ -1358,7 +1219,6 @@
     card.innerHTML = `
       <div class="photo">
         <span class="tag ${tag.cls}">${tag.label}</span>
-        <span class="drag-hint">✋ Arrastrar</span>
         🍣
       </div>
       <div class="body">
@@ -1372,14 +1232,14 @@
         </div>
       </div>
     `;
-    card.querySelector(".piece-minus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, -p.bloque); renderPiezasTray(); });
-    card.querySelector(".piece-plus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, p.bloque, card.querySelector(".photo")); renderPiezasTray(); });
-    setupPieceDrag(card.querySelector(".photo"), card, key);
+    card.querySelector(".piece-minus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, -p.bloque); });
+    card.querySelector(".piece-plus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, p.bloque, card.querySelector(".photo")); });
     piezasGrid.appendChild(card);
     revealObserver.observe(card);
   });
 
-  renderPiezasTray();
+  updateFabBadge();
+  updatePiezasNote();
 </script>
 
 </body>
