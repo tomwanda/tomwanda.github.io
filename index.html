@@ -613,6 +613,18 @@
   .cart-envio-note.achieved{
     background:#eaf3e6; color:var(--olive); border:1px solid var(--olive-light);
   }
+  .cart-zona-picker{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom:12px;
+  }
+  .cart-zona-picker label{
+    font-size:0.78rem; font-weight:700; color:var(--text); flex-shrink:0;
+  }
+  .cart-zona-picker select{
+    flex:1; max-width:62%; font-family:inherit; font-size:0.8rem; color:var(--text);
+    background:var(--frame-bg); border:1px solid var(--border); border-radius:8px;
+    padding:7px 8px; cursor:pointer;
+  }
 
   /* ---- Piezas sueltas: armá tu pedido ---- */
   .piece-card{position:relative;}
@@ -696,7 +708,7 @@
   <div class="step"><div class="num">3</div><p>Coordinamos fecha, horario y forma de entrega</p></div>
 </div>
 
-            <div class="occasions">Zona de entrega: San Isidro, Beccar, Martinez y Victoria (Zona Norte) · Envío gratis en pedidos desde $15.000</div>
+            <div class="occasions">Zona de entrega: San Isidro, Beccar, Martinez y Victoria (Zona Norte) · Envío gratis siempre en Beccar y San Isidro, y desde $15.000 en el resto</div>
 
 <div class="gallery-section">
   <h2 class="section-title">Nuestras creaciones</h2>
@@ -770,6 +782,17 @@
       <h3>Tu pedido 🛒</h3>
       <div class="cart-items" id="cart-items"></div>
       <div class="cart-total-row"><span>Total</span><span class="cart-total-val" id="cart-total-val"></span></div>
+      <div class="cart-zona-picker" id="cart-zona-picker" style="display:none;">
+        <label for="cart-zona-select">Tu zona de entrega</label>
+        <select id="cart-zona-select">
+          <option value="">Elegí tu zona…</option>
+          <option value="beccar">Béccar</option>
+          <option value="san-isidro">San Isidro</option>
+          <option value="martinez">Martínez</option>
+          <option value="victoria">Victoria</option>
+          <option value="otra">Otra zona</option>
+        </select>
+      </div>
       <div class="cart-envio-note" id="cart-envio-note" style="display:none;"></div>
       <div class="cart-piezas-warn" id="cart-piezas-warn" style="display:none;"></div>
       <button type="button" class="btn-confirm-wa" id="cart-confirm">Confirmar pedido por WhatsApp</button>
@@ -861,6 +884,25 @@
   // según distancia — este piso asegura que el envío gratis no coma margen,
   // incluso en el peor caso de un pedido chico de piezas sueltas).
   const ENVIO_GRATIS_MINIMO = 15000;
+  // Zonas de entrega, con distancia aproximada desde el local (Béccar). Las
+  // "cerca" (Béccar y San Isidro, ~1.5-2km) tienen envío gratis siempre,
+  // sin importar el monto — el costo real de Rapiboy para esa distancia es
+  // chico y se absorbe. Las demás siguen dependiendo del mínimo de $15.000.
+  const ZONAS = {
+    "beccar":     { label: "Béccar",     cerca: true  },
+    "san-isidro": { label: "San Isidro", cerca: true  },
+    "martinez":   { label: "Martínez",   cerca: false },
+    "victoria":   { label: "Victoria",   cerca: false },
+    "otra":       { label: "otra zona", cerca: false, fueraCobertura: true }
+  };
+  let selectedZona = "";
+  function envioStatus(total){
+    // Devuelve { gratis: bool, motivo: 'zona'|'monto'|null }
+    const z = ZONAS[selectedZona];
+    if (z && z.cerca) return { gratis: true, motivo: "zona" };
+    if (total >= ENVIO_GRATIS_MINIMO) return { gratis: true, motivo: "monto" };
+    return { gratis: false, motivo: null };
+  }
   function isPiezaKey(key){ return typeof key === "string" && key.charAt(0) === "p"; }
   function piezaData(key){ return piezasSueltas[parseInt(key.slice(1), 10)]; }
 
@@ -986,7 +1028,10 @@
       return `• ${q}x ${c.nombre} (${c.precio} c/u)`;
     });
     const total = cartTotal();
-    const envioLinea = total >= ENVIO_GRATIS_MINIMO ? "Envío: gratis 🛵" : "Envío: a coordinar aparte según zona";
+    const estado = envioStatus(total);
+    const z = ZONAS[selectedZona];
+    const zonaTxt = z ? ` (${z.label})` : "";
+    const envioLinea = estado.gratis ? `Envío: gratis 🛵${zonaTxt}` : `Envío: a coordinar aparte según zona${zonaTxt}`;
     const msg = `Hola! Quiero hacer este pedido:\n\n${lineas.join("\n")}\n\n${envioLinea}\nTotal: ${formatARS(total)}\n\n¿Coordinamos día y horario? 🍣`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
@@ -1133,16 +1178,29 @@
     const confirmBtn = document.getElementById("cart-confirm");
     const piezasWarnCart = document.getElementById("cart-piezas-warn");
     const envioNote = document.getElementById("cart-envio-note");
+    const zonaPicker = document.getElementById("cart-zona-picker");
+    const zonaSelect = document.getElementById("cart-zona-select");
     if (total > 0){
+      zonaPicker.style.display = "flex";
+      zonaSelect.value = selectedZona;
+      const estado = envioStatus(total);
+      const z = ZONAS[selectedZona];
       envioNote.style.display = "block";
-      if (total >= ENVIO_GRATIS_MINIMO){
+      if (estado.gratis && estado.motivo === "zona"){
+        envioNote.className = "cart-envio-note achieved";
+        envioNote.textContent = `🛵 ¡Envío gratis en ${z.label}!`;
+      } else if (estado.gratis){
         envioNote.className = "cart-envio-note achieved";
         envioNote.textContent = "🛵 ¡Envío gratis en tu zona!";
       } else {
         envioNote.className = "cart-envio-note";
-        envioNote.textContent = `Te faltan ${formatARS(ENVIO_GRATIS_MINIMO - total)} para el envío gratis (por debajo de ${formatARS(ENVIO_GRATIS_MINIMO)} el envío se coordina aparte, según zona).`;
+        let txt = `Te faltan ${formatARS(ENVIO_GRATIS_MINIMO - total)} para el envío gratis (por debajo de ${formatARS(ENVIO_GRATIS_MINIMO)} el envío se coordina aparte, según zona).`;
+        if (z && z.fueraCobertura) txt += " Tu zona no es de las que cubrimos habitualmente (San Isidro, Béccar, Martínez, Victoria) — te confirmamos por WhatsApp si podemos llegar.";
+        else if (!z) txt += " Elegí tu zona arriba: en Béccar y San Isidro el envío es gratis siempre.";
+        envioNote.textContent = txt;
       }
     } else {
+      zonaPicker.style.display = "none";
       envioNote.style.display = "none";
     }
     const pc = piezasCount();
@@ -1166,6 +1224,10 @@
   }
   document.getElementById("cart-close").addEventListener("click", closeCartModal);
   cartOverlay.addEventListener("click", e => { if (e.target === cartOverlay) closeCartModal(); });
+  document.getElementById("cart-zona-select").addEventListener("change", e => {
+    selectedZona = e.target.value;
+    renderCartModal();
+  });
   document.getElementById("cart-clear").addEventListener("click", () => {
     Object.keys(cart).forEach(k => delete cart[k]);
     refreshQtyDisplays();
