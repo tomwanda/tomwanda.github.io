@@ -825,15 +825,14 @@
     "Niguiris de Salmón": "Salmón fresco sobre un bocado de arroz (nigiri, sin alga).",
     "Lime Roll": "Langostinos rebozados, queso crema, salmón, lima, alga nori y arroz.",
     "Mex Roll": "Salmón, queso crema, guacamole, batata crocante, alga nori y arroz.",
-    "Sashimis": "Finas láminas de salmón fresco (sin arroz ni alga).",
+    "Sashimis": "Láminas de salmón fresco (sin arroz ni alga).",
     "2 Salmones": "Palta, tartar de salmón, alga nori y arroz.",
     "Dragon Roll": "Langostinos rebozados, queso crema, palta, alga nori y arroz.",
     "Nigiri Trufa": "Salmón, aceite de trufa, sal marina y ralladura de lima sobre un bocado de arroz.",
     "Nigiri Langostino": "Langostino desvenado sobre un bocado de arroz.",
-    "Nigiri Atún": "Atún rojo, salsa nikkei y caviar sobre un bocado de arroz.",
-    "Nigiri Acevichado": "Salmón, salsa acevichada y togarashi (especias japonesas) sobre un bocado de arroz.",
+    "Nigiri Acevichado": "Pesca blanca, salsa acevichada y togarashi (especias japonesas) sobre un bocado de arroz.",
     "Nigiri Veggie": "Palta, un toque de queso crema, frutilla y mango en brunoise sobre un bocado de arroz.",
-    "Nigiri Huancaina": "Salsa huancaína, chalaquita y cilantro fresco sobre un bocado de arroz.",
+    "Nigiri Huancaina": "Salmón, salsa huancaína, chalaquita y cilantro fresco sobre un bocado de arroz.",
     "Tartar Roll": "Langostino desvenado, queso crema, tartar de salmón, alga nori y arroz.",
     "Gueishas": "Salmón, queso crema y palta (sin arroz ni alga)."
   };
@@ -874,7 +873,6 @@
     { nombre: "Niguiris de Salmón", precioBloque: 5300, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Trufa", precioBloque: 6800, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Langostino", precioBloque: 7200, bloque: 2, tag: "premium" },
-    { nombre: "Nigiri Atún", precioBloque: 12500, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Acevichado", precioBloque: 6000, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Veggie", precioBloque: 4000, bloque: 2, tag: "premium" },
     { nombre: "Nigiri Huancaina", precioBloque: 3000, bloque: 2, tag: "premium" }
@@ -1086,29 +1084,42 @@
   const modalRolls = document.getElementById("modal-rolls");
   const modalQty = document.getElementById("modal-qty");
 
-  function openModal(idx){
-    const c = combos[idx];
-    modalTitle.textContent = c.nombre;
-    modalPrice.textContent = `${c.precio} · ${totalPiezas(c)} piezas`;
-    modalRolls.innerHTML = c.rolls.map(r => `
-      <div class="modal-roll">
-        <div class="roll-name"><span>${r.q}x</span>${r.n}</div>
-        <div class="roll-ing">${ROLL_INFO[r.n] || ""}</div>
-      </div>
-    `).join("");
+  function openModal(key){
+    const isPieza = isPiezaKey(key);
+    const delta = isPieza ? piezaData(key).bloque : 1;
+    if (isPieza){
+      const p = piezaData(key);
+      modalTitle.textContent = p.nombre;
+      modalPrice.textContent = `${formatARS(p.precioBloque)} c/${p.bloque} piezas`;
+      modalRolls.innerHTML = `
+        <div class="modal-roll">
+          <div class="roll-ing">${ROLL_INFO[p.nombre] || ""}</div>
+        </div>
+      `;
+    } else {
+      const c = combos[key];
+      modalTitle.textContent = c.nombre;
+      modalPrice.textContent = `${c.precio} · ${totalPiezas(c)} piezas`;
+      modalRolls.innerHTML = c.rolls.map(r => `
+        <div class="modal-roll">
+          <div class="roll-name"><span>${r.q}x</span>${r.n}</div>
+          <div class="roll-ing">${ROLL_INFO[r.n] || ""}</div>
+        </div>
+      `).join("");
+    }
     modalQty.innerHTML = `
       <div class="qty-stepper large">
         <button type="button" class="qty-btn qty-minus" aria-label="Quitar">−</button>
-        <span class="qty-val" data-qty-idx="${idx}">${cart[idx] || 0}</span>
+        <span class="qty-val" data-qty-idx="${key}">${cart[key] || 0}</span>
         <button type="button" class="qty-btn qty-plus" aria-label="Agregar">+</button>
       </div>
       <div class="modal-qty-hint">Sumalo a tu pedido y confirmá todo junto por WhatsApp 🛒</div>
     `;
-    modalQty.querySelector(".qty-minus").addEventListener("click", () => changeQty(idx, -1));
-    modalQty.querySelector(".qty-plus").addEventListener("click", () => changeQty(idx, 1, document.getElementById("modal-photo")));
+    modalQty.querySelector(".qty-minus").addEventListener("click", () => changeQty(key, -delta));
+    modalQty.querySelector(".qty-plus").addEventListener("click", () => changeQty(key, delta, document.getElementById("modal-photo")));
     overlay.classList.add("open");
     document.body.style.overflow = "hidden";
-    const info = itemInfo(idx);
+    const info = itemInfo(key);
     gaEvent("view_item", {
       currency: "ARS", value: info.price,
       items: [{ item_id: info.item_id, item_name: info.item_name, item_category: info.item_category, price: info.price }]
@@ -1284,7 +1295,7 @@
     card.innerHTML = `
       <div class="photo">
         <span class="tag ${tag.cls}">${tag.label}</span>
-        🍣
+        🍣<span class="zoom-hint">Ver detalle</span>
       </div>
       <div class="body">
         <h3>${p.nombre}</h3>
@@ -1299,6 +1310,7 @@
     `;
     card.querySelector(".piece-minus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, -p.bloque); });
     card.querySelector(".piece-plus").addEventListener("click", e => { e.stopPropagation(); changeQty(key, p.bloque, card.querySelector(".photo")); });
+    card.addEventListener("click", () => openModal(key));
     piezasGrid.appendChild(card);
     revealObserver.observe(card);
   });
